@@ -1,180 +1,268 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  FiMoon,
+  FiSun,
+  FiArrowRight,
+  FiFileText,
+  FiSearch,
+  FiMessageSquare,
+  FiShield,
+} from "react-icons/fi";
+
 export default function Home() {
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (darkMode) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    }
+
+    setDarkMode(!darkMode);
+  };
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="min-h-screen bg-white text-gray-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
 
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-10 py-6 border-b border-slate-800">
+      {/* ================= NAVBAR ================= */}
 
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-xl">
-            D
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-950/80">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-5">
+
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl font-bold text-white">
+              D
+            </div>
+
+            <div>
+              <h1 className="text-xl font-bold">
+                Document<span className="text-blue-600">Hub</span>
+              </h1>
+            </div>
           </div>
 
-          <h1 className="text-2xl font-bold">
-            Document<span className="text-blue-500">Hub</span>
-          </h1>
+          <div className="hidden gap-10 font-medium md:flex">
+            <a href="#" className="hover:text-blue-600">
+              Home
+            </a>
+            <a href="#" className="hover:text-blue-600">
+              Features
+            </a>
+            <a href="#" className="hover:text-blue-600">
+              AI Workspace
+            </a>
+            <a href="#" className="hover:text-blue-600">
+              Contact
+            </a>
+          </div>
+
+          <div className="flex items-center gap-4">
+
+            <button
+              onClick={toggleTheme}
+              className="rounded-xl border border-gray-300 p-3 transition hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            >
+              {darkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
+            </button>
+
+            <a
+              href="/login"
+              className="hidden rounded-xl border border-gray-300 px-5 py-2 font-medium hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-800 md:block"
+            >
+              Login
+            </a>
+
+            <a
+              href="/register"
+              className="rounded-xl bg-blue-600 px-5 py-2 font-semibold text-white transition hover:bg-blue-700"
+            >
+              Get Started
+            </a>
+
+          </div>
+
         </div>
-
-        <div className="hidden md:flex items-center gap-8 text-slate-300">
-          <a href="#" className="hover:text-white transition">Home</a>
-          <a href="#" className="hover:text-white transition">Features</a>
-          <a href="#" className="hover:text-white transition">About</a>
-          <a href="#" className="hover:text-white transition">Contact</a>
-        </div>
-
-        <div className="flex gap-4">
-          <a
-            href="/login"
-            className="px-5 py-2 rounded-lg border border-slate-700 hover:border-blue-500 transition"
-          >
-            Login
-          </a>
-
-          <a
-            href="/register"
-            className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition"
-          >
-            Register
-          </a>
-        </div>
-
       </nav>
 
-      {/* Hero */}
+      {/* ================= HERO ================= */}
 
-      <section className="max-w-7xl mx-auto px-10 py-24">
+      <section className="mx-auto flex max-w-7xl flex-col items-center gap-16 px-8 py-20 lg:flex-row">
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        {/* LEFT */}
 
-          {/* Left */}
+        <div className="flex-1">
 
-          <div>
+          <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+            AI Powered Document Management
+          </span>
 
-            <span className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-300">
-              AI Powered Document Management
+          <h1 className="mt-8 text-5xl font-extrabold leading-tight lg:text-7xl">
+
+            Organize Every
+            <span className="block text-blue-600">
+              Document Smarter
             </span>
 
-            <h1 className="mt-8 text-5xl lg:text-7xl font-extrabold leading-tight">
+          </h1>
 
-              Manage Your
-              <span className="block bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                Documents
-              </span>
+          <p className="mt-8 max-w-xl text-lg leading-8 text-gray-600 dark:text-slate-400">
 
-              Smarter with AI
+            Store, organize, search, summarize and chat with your
+            documents using Artificial Intelligence.
 
-            </h1>
+            Secure cloud storage, OCR, reminders, AI search,
+            document translation and much more in one platform.
 
-            <p className="mt-8 text-lg text-slate-400 leading-8 max-w-xl">
+          </p>
 
-              Upload, organize, summarize, search, and chat with your
-              documents using powerful AI. Keep everything secure,
-              accessible, and intelligently managed from one place.
+          <div className="mt-10 flex flex-wrap gap-5">
 
-            </p>
+            <a
+              href="/register"
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-4 font-semibold text-white transition hover:bg-blue-700"
+            >
+              Get Started
+              <FiArrowRight />
+            </a>
 
-            <div className="mt-10 flex flex-wrap gap-5">
-
-              <a
-                href="/register"
-                className="rounded-xl bg-blue-600 px-8 py-4 font-semibold hover:bg-blue-700 transition"
-              >
-                Get Started
-              </a>
-
-              <a
-                href="#"
-                className="rounded-xl border border-slate-700 px-8 py-4 hover:border-blue-500 transition"
-              >
-                Learn More
-              </a>
-
-            </div>
-
-            <div className="mt-12 flex flex-wrap gap-4">
-
-              {[
-                "AI Search",
-                "OCR",
-                "Summarization",
-                "Chat with PDFs",
-                "Secure Storage",
-              ].map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300"
-                >
-                  {item}
-                </span>
-              ))}
-
-            </div>
+            <button className="rounded-xl border border-gray-300 px-7 py-4 font-medium hover:bg-gray-100 dark:border-slate-700 dark:hover:bg-slate-800">
+              Learn More
+            </button>
 
           </div>
 
-          {/* Right */}
+          <div className="mt-12 flex flex-wrap gap-3">
 
-          <div className="relative">
+            {[
+              "OCR",
+              "AI Search",
+              "Summarization",
+              "Chat with PDFs",
+              "Secure Storage",
+            ].map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              >
+                {item}
+              </span>
+            ))}
 
-            <div className="rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
+          </div>
 
-              <div className="flex items-center justify-between">
+        </div>
 
-                <h2 className="text-xl font-semibold">
-                  AI Workspace
-                </h2>
+        {/* RIGHT */}
 
-                <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs text-green-400">
-                  Online
-                </span>
+        <div className="flex-1">
+
+          <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl transition dark:border-slate-800 dark:bg-slate-900">
+
+            <div className="flex items-center justify-between">
+
+              <h2 className="text-xl font-bold">
+                Dashboard Preview
+              </h2>
+
+              <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                Online
+              </span>
+
+            </div>
+
+            <div className="mt-8 space-y-5">
+
+              <div className="flex items-center gap-4 rounded-2xl bg-gray-100 p-5 dark:bg-slate-800">
+
+                <FiFileText
+                  className="text-blue-600"
+                  size={25}
+                />
+
+                <div>
+                  <h3 className="font-semibold">
+                    Research Paper.pdf
+                  </h3>
+
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    AI Summary Available
+                  </p>
+                </div>
 
               </div>
 
-              <div className="mt-8 space-y-5">
+              <div className="flex items-center gap-4 rounded-2xl bg-gray-100 p-5 dark:bg-slate-800">
 
-                <div className="rounded-xl bg-slate-800 p-5">
+                <FiSearch
+                  className="text-blue-600"
+                  size={25}
+                />
 
-                  <p className="font-semibold">
-                    📄 Annual_Report.pdf
+                <div>
+                  <h3 className="font-semibold">
+                    Smart Search
+                  </h3>
+
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    Find any document instantly.
                   </p>
-
-                  <p className="mt-2 text-sm text-slate-400">
-                    AI Summary Generated
-                  </p>
-
                 </div>
 
-                <div className="rounded-xl bg-slate-800 p-5">
+              </div>
 
-                  <p className="font-semibold">
-                    🔍 Search
+              <div className="flex items-center gap-4 rounded-2xl bg-gray-100 p-5 dark:bg-slate-800">
+
+                <FiMessageSquare
+                  className="text-blue-600"
+                  size={25}
+                />
+
+                <div>
+                  <h3 className="font-semibold">
+                    AI Assistant
+                  </h3>
+
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    Ask questions about your documents.
                   </p>
-
-                  <p className="mt-2 text-sm text-slate-400">
-                    "Find invoices from March 2026"
-                  </p>
-
                 </div>
 
-                <div className="rounded-xl bg-slate-800 p-5">
+              </div>
 
-                  <p className="font-semibold">
-                    🤖 AI Assistant
+              <div className="flex items-center gap-4 rounded-2xl bg-gray-100 p-5 dark:bg-slate-800">
+
+                <FiShield
+                  className="text-blue-600"
+                  size={25}
+                />
+
+                <div>
+                  <h3 className="font-semibold">
+                    Secure Storage
+                  </h3>
+
+                  <p className="text-sm text-gray-500 dark:text-slate-400">
+                    End-to-end protected documents.
                   </p>
-
-                  <p className="mt-2 text-sm text-slate-400">
-                    "Summarize this legal agreement in simple terms."
-                  </p>
-
                 </div>
 
               </div>
 
             </div>
-
-            {/* Glow */}
-
-            <div className="absolute -z-10 -right-12 top-10 h-72 w-72 rounded-full bg-blue-600 blur-[120px] opacity-30"></div>
 
           </div>
 
