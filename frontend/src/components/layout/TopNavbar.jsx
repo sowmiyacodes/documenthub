@@ -1,10 +1,35 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { Search, Bell } from "lucide-react";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Typography,
+  Paper,
+  InputBase,
+  IconButton,
+  Avatar,
+  Badge,
+  Menu,
+  MenuItem,
+  Divider,
+} from "@mui/material";
+
+import {
+  Search,
+  NotificationsNone,
+  AccountCircle,
+  Settings,
+  Logout,
+  LightMode,
+} from "@mui/icons-material";
+
+import { useNavigate } from "react-router-dom";
 
 export default function TopNavbar() {
   const [user, setUser] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -14,56 +39,191 @@ export default function TopNavbar() {
     }
   }, []);
 
-  return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white px-8">
+  const openMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-      {/* Search */}
+  const closeMenu = () => {
+    setAnchorEl(null);
+  };
 
-      <div className="relative hidden w-full max-w-md lg:block">
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-        <Search
-          size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-        />
+    navigate("/");
 
-        <input
-          type="text"
-          placeholder="Search your documents..."
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white"
-        />
+    closeMenu();
+  };
 
-      </div>
+return (
+  <>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        bgcolor: "#fff",
+        color: "#111827",
+        borderBottom: "1px solid #E5E7EB",
+      }}
+    >
+      <Toolbar
+        sx={{
+          minHeight: "90px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: 4,
+        }}
+      >
+        {/* Left Section */}
 
-      {/* Right */}
+        <Box display="flex" flexDirection="column">
+          <Typography variant="h5" fontWeight={700}>
+            Welcome Back 👋
+          </Typography>
 
-      <div className="ml-auto flex items-center gap-4">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 2 }}
+          >
+            Manage your documents with AI.
+          </Typography>
 
-        <button className="rounded-xl border border-slate-200 p-3 transition hover:bg-slate-100">
-          <Bell size={20} />
-        </button>
+          {/* Search Bar */}
 
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <Paper
+            elevation={0}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              width: 420,
+              px: 2,
+              py: 0.8,
+              borderRadius: 3,
+              bgcolor: "#F8FAFC",
+              border: "1px solid #E2E8F0",
+            }}
+          >
+            <Search
+              sx={{
+                color: "#64748B",
+                mr: 1,
+              }}
+            />
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
-            {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
-          </div>
+            <InputBase
+              placeholder="Search documents..."
+              fullWidth
+            />
+          </Paper>
+        </Box>
 
-          <div className="hidden sm:block">
+        {/* Right Section */}
 
-            <p className="text-sm font-semibold text-slate-800">
-              {user?.full_name || "User"}
-            </p>
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={2}
+        >
+          {/* Theme */}
 
-            <p className="text-xs text-slate-500">
-              {user?.email || ""}
-            </p>
+          <IconButton
+            sx={{
+              bgcolor: "#F8FAFC",
+              border: "1px solid #E2E8F0",
+            }}
+          >
+            <LightMode />
+          </IconButton>
 
-          </div>
+          {/* Notifications */}
 
-        </div>
+          <IconButton
+            sx={{
+              bgcolor: "#F8FAFC",
+              border: "1px solid #E2E8F0",
+            }}
+          >
+            <Badge
+              badgeContent={2}
+              color="error"
+            >
+              <NotificationsNone />
+            </Badge>
+          </IconButton>
 
-      </div>
+          {/* Profile */}
 
-    </header>
-  );
+          <Box
+            onClick={openMenu}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              px: 2,
+              py: 1,
+              borderRadius: 3,
+              cursor: "pointer",
+              border: "1px solid #E2E8F0",
+              transition: "0.2s",
+              "&:hover": {
+                bgcolor: "#F8FAFC",
+              },
+            }}
+          >
+            <Avatar sx={{ bgcolor: "#2563EB" }}>
+              {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+            </Avatar>
+
+            <Box>
+              <Typography
+                fontWeight={600}
+                fontSize={14}
+              >
+                {user?.full_name || "User"}
+              </Typography>
+
+              <Typography
+                variant="caption"
+                color="text.secondary"
+              >
+                {user?.email || ""}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Toolbar>
+    </AppBar>
+
+    {/* Profile Menu */}
+
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={closeMenu}
+    >
+      <MenuItem onClick={closeMenu}>
+        <AccountCircle sx={{ mr: 1 }} />
+        Profile
+      </MenuItem>
+
+      <MenuItem onClick={closeMenu}>
+        <Settings sx={{ mr: 1 }} />
+        Settings
+      </MenuItem>
+
+      <Divider />
+
+      <MenuItem
+        onClick={logout}
+        sx={{ color: "#DC2626" }}
+      >
+        <Logout sx={{ mr: 1 }} />
+        Logout
+      </MenuItem>
+    </Menu>
+  </>
+);
 }

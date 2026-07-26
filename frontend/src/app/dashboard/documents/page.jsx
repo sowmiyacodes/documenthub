@@ -1,12 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  Box,
+  Paper,
+  CircularProgress,
+  InputAdornment,
+  Dialog,
+} from "@mui/material";
+
 import {
   Upload,
   Search,
   FolderOpen,
-  Filter,
-} from "lucide-react";
+  FilterList,
+} from "@mui/icons-material";
 
 import UploadDocumentModal from "@/components/documents/UploadDocumentModal";
 import DocumentCard from "@/components/documents/DocumentCard";
@@ -17,213 +36,556 @@ import {
   viewDocument,
 } from "@/services/document";
 
+
 export default function DocumentsPage() {
+
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
+
   const loadDocuments = async () => {
+
     try {
+
       setLoading(true);
 
       const response = await getDocuments();
 
       setDocuments(response.documents || []);
-    } catch (err) {
+
+    } catch(err) {
+
       console.error(err);
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
+
 
   useEffect(() => {
+
     loadDocuments();
+
   }, []);
 
-  const handleView = async (id) => {
-    try {
+
+
+  const handleView = async(id)=>{
+
+    try{
+
       const response = await viewDocument(id);
-      window.open(response.url, "_blank");
-    } catch (err) {
+
+      window.open(response.url,"_blank");
+
+    }catch(err){
+
       console.error(err);
+
     }
+
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this document?")) return;
 
-    try {
+
+  const handleDelete = async(id)=>{
+
+    if(!window.confirm("Delete this document?"))
+      return;
+
+
+    try{
+
       await deleteDocument(id);
+
       loadDocuments();
-    } catch (err) {
+
+    }catch(err){
+
       console.error(err);
+
     }
+
   };
 
-  const filteredDocuments = documents.filter((doc) => {
-    const matchSearch = doc.file_name
-      .toLowerCase()
+
+
+  const filteredDocuments = documents.filter((doc)=>{
+
+
+    const matchSearch =
+      doc.file_name
+      ?.toLowerCase()
       .includes(search.toLowerCase());
 
+
     const matchCategory =
-      category === "All" || doc.category === category;
+      category==="All" ||
+      doc.category===category;
+
 
     return matchSearch && matchCategory;
+
+
   });
 
-  return (
-    <>
-      <div className="space-y-8">
 
-        {/* Header */}
 
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+return (
 
-          <div>
+<Box sx={{p:{xs:2,md:4}}}>
 
-            <p className="text-sm font-semibold text-blue-600">
-              Document Vault
-            </p>
 
-            <h1 className="mt-2 text-4xl font-bold text-slate-900">
-              My Documents
-            </h1>
+{/* Header */}
 
-            <p className="mt-2 text-slate-500">
-              {documents.length} document
-              {documents.length !== 1 ? "s" : ""} stored securely.
-            </p>
+<Box
+sx={{
+display:"flex",
+justifyContent:"space-between",
+alignItems:{md:"center"},
+flexDirection:{xs:"column",md:"row"},
+gap:3,
+mb:5
+}}
+>
 
-          </div>
 
-          <button
-            onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Upload size={18} />
-            Upload Document
-          </button>
+<Box>
 
-        </div>
+<Typography
+variant="subtitle2"
+color="primary"
+fontWeight={700}
+>
+Document Vault
+</Typography>
 
-        {/* Toolbar */}
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:flex-row">
+<Typography
+variant="h3"
+fontWeight={800}
+mt={1}
+>
+My Documents
+</Typography>
 
-          <div className="relative flex-1">
 
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            />
+<Typography
+color="text.secondary"
+mt={1}
+>
+{documents.length} document
+{documents.length!==1?"s":""}
+stored securely.
+</Typography>
 
-            <input
-              type="text"
-              placeholder="Search by file name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 outline-none transition focus:border-blue-500"
-            />
 
-          </div>
+</Box>
 
-          <div className="relative">
 
-            <Filter
-              size={16}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            />
 
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-8 outline-none"
-            >
-              <option>All</option>
-              <option>Education</option>
-              <option>Identity</option>
-              <option>Medical</option>
-              <option>Financial</option>
-              <option>Legal</option>
-              <option>Others</option>
-            </select>
+<Button
+variant="contained"
+size="large"
+startIcon={<Upload/>}
+onClick={()=>setIsUploadModalOpen(true)}
 
-          </div>
+sx={{
+borderRadius:3,
+px:4,
+py:1.5,
+textTransform:"none",
+fontWeight:700
+}}
 
-        </div>
+>
 
-        {/* Loading */}
+Upload Document
 
-        {loading && (
-          <div className="py-24 text-center text-slate-500">
-            Loading documents...
-          </div>
-        )}
+</Button>
 
-        {/* Empty */}
 
-        {!loading && filteredDocuments.length === 0 && (
-          <div className="rounded-3xl border border-slate-200 bg-white py-24 shadow-sm">
+</Box>
 
-            <div className="flex flex-col items-center">
 
-              <div className="rounded-full bg-blue-100 p-6">
 
-                <FolderOpen
-                  size={55}
-                  className="text-blue-600"
-                />
 
-              </div>
 
-              <h2 className="mt-8 text-2xl font-bold text-slate-900">
-                No Documents Found
-              </h2>
+{/* Search and Filter */}
 
-              <p className="mt-3 max-w-md text-center text-slate-500">
-                Upload your first document and build your secure
-                AI-powered document vault.
-              </p>
+<Paper
 
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="mt-8 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
-              >
-                Upload First Document
-              </button>
+elevation={2}
 
-            </div>
+sx={{
 
-          </div>
-        )}
+p:3,
 
-        {/* Documents */}
+borderRadius:4,
 
-        {!loading && filteredDocuments.length > 0 && (
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredDocuments.map((document) => (
-              <DocumentCard
-                key={document.id}
-                document={document}
-                onView={handleView}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        )}
+mb:5,
 
-      </div>
+display:"flex",
 
-      <UploadDocumentModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onUploadSuccess={() => {
-          setIsUploadModalOpen(false);
-          loadDocuments();
-        }}
-      />
-    </>
-  );
+gap:2,
+
+flexDirection:{
+xs:"column",
+md:"row"
+}
+
+}}
+
+>
+
+
+<TextField
+
+fullWidth
+
+placeholder="Search by file name..."
+
+value={search}
+
+onChange={(e)=>setSearch(e.target.value)}
+
+InputProps={{
+
+startAdornment:(
+
+<InputAdornment position="start">
+
+<Search/>
+
+</InputAdornment>
+
+)
+
+}}
+
+/>
+
+
+
+<FormControl
+
+sx={{
+
+minWidth:{
+xs:"100%",
+md:220
+}
+
+}}
+
+>
+
+
+<InputLabel>
+
+Category
+
+</InputLabel>
+
+
+<Select
+
+value={category}
+
+label="Category"
+
+onChange={(e)=>setCategory(e.target.value)}
+
+startAdornment={
+
+<FilterList sx={{mr:1}}/>
+
+}
+
+>
+
+
+<MenuItem value="All">
+All
+</MenuItem>
+
+
+<MenuItem value="Education">
+Education
+</MenuItem>
+
+
+<MenuItem value="Identity">
+Identity
+</MenuItem>
+
+
+<MenuItem value="Medical">
+Medical
+</MenuItem>
+
+
+<MenuItem value="Financial">
+Financial
+</MenuItem>
+
+
+<MenuItem value="Legal">
+Legal
+</MenuItem>
+
+
+<MenuItem value="Others">
+Others
+</MenuItem>
+
+
+</Select>
+
+
+</FormControl>
+
+
+</Paper>
+
+
+
+
+
+{/* Loading */}
+
+{
+loading &&
+
+<Box
+sx={{
+display:"flex",
+justifyContent:"center",
+py:10
+}}
+>
+
+<CircularProgress/>
+
+</Box>
+
+}
+
+
+
+
+
+{/* Empty State */}
+
+
+{
+!loading &&
+filteredDocuments.length===0 &&
+
+<Card
+
+sx={{
+
+borderRadius:5,
+
+py:10,
+
+textAlign:"center"
+
+}}
+
+>
+
+
+<Box>
+
+<Box
+
+sx={{
+
+width:100,
+
+height:100,
+
+borderRadius:"50%",
+
+bgcolor:"primary.light",
+
+display:"flex",
+
+alignItems:"center",
+
+justifyContent:"center",
+
+mx:"auto"
+
+}}
+
+>
+
+<FolderOpen
+
+sx={{
+
+fontSize:55,
+
+color:"primary.main"
+
+}}
+
+/>
+
+</Box>
+
+
+
+<Typography
+variant="h5"
+fontWeight={700}
+mt={4}
+>
+
+No Documents Found
+
+</Typography>
+
+
+<Typography
+
+color="text.secondary"
+
+mt={2}
+
+>
+
+Upload your first document and build your secure
+AI-powered document vault.
+
+</Typography>
+
+
+
+<Button
+
+variant="contained"
+
+sx={{mt:4}}
+
+onClick={()=>setIsUploadModalOpen(true)}
+
+>
+
+Upload First Document
+
+</Button>
+
+
+</Box>
+
+
+</Card>
+
+}
+
+
+
+
+
+{/* Document Cards */}
+
+
+{
+
+!loading &&
+filteredDocuments.length>0 &&
+
+
+<Grid
+
+container
+
+spacing={3}
+
+>
+
+
+{
+
+filteredDocuments.map((document)=>(
+
+
+<Grid
+
+item
+
+xs={12}
+
+sm={6}
+
+lg={4}
+
+key={document.id}
+
+>
+
+
+<DocumentCard
+
+document={document}
+
+onView={handleView}
+
+onDelete={handleDelete}
+
+/>
+
+
+</Grid>
+
+
+))
+
+
+}
+
+
+</Grid>
+
+
+}
+
+
+
+<UploadDocumentModal
+
+isOpen={isUploadModalOpen}
+
+onClose={()=>setIsUploadModalOpen(false)}
+
+onUploadSuccess={()=>{
+
+setIsUploadModalOpen(false);
+
+loadDocuments();
+
+}}
+
+/>
+
+
+
+</Box>
+
+
+);
+
 }

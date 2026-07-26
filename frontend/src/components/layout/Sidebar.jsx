@@ -1,179 +1,256 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
-  FolderOpen,
-  Brain,
-  Bell,
-  Settings,
-  LogOut,
-  HardDrive,
-} from "lucide-react";
+  Drawer,
+  Toolbar,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  Box,
+  Avatar,
+  Divider,
+  Button,
+  LinearProgress,
+  Chip,
+} from "@mui/material";
 
-const menuItems = [
+import {
+  Dashboard,
+  Description,
+  Psychology,
+  Notifications,
+  Settings,
+  Logout,
+  Storage,
+  AutoAwesome,
+} from "@mui/icons-material";
+
+import { useLocation, useNavigate } from "react-router-dom";
+
+const drawerWidth = 280;
+
+const menu = [
   {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
+    text: "Dashboard",
+    icon: <Dashboard />,
+    path: "/dashboard",
   },
   {
-    title: "Documents",
-    href: "/dashboard/documents",
-    icon: FolderOpen,
+    text: "Documents",
+    icon: <Description />,
+    path: "/dashboard/documents",
   },
   {
-    title: "AI Assistant",
-    href: "#",
-    icon: Brain,
+    text: "AI Assistant",
+    icon: <Psychology />,
+    path: "#",
     disabled: true,
   },
   {
-    title: "Reminders",
-    href: "#",
-    icon: Bell,
+    text: "Reminders",
+    icon: <Notifications />,
+    path: "#",
     disabled: true,
   },
   {
-    title: "Settings",
-    href: "#",
-    icon: Settings,
+    text: "Settings",
+    icon: <Settings />,
+    path: "#",
     disabled: true,
   },
 ];
 
 export default function Sidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    router.replace("/");
+    navigate("/");
   };
 
   return (
-    <aside className="hidden lg:flex h-screen w-72 flex-col border-r border-slate-200 bg-white">
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: drawerWidth,
+        flexShrink: 0,
 
-      {/* Logo */}
+        "& .MuiDrawer-paper": {
+          width: drawerWidth,
+          boxSizing: "border-box",
+          borderRight: "1px solid #E5E7EB",
+          background: "#FAFBFC",
+        },
+      }}
+    >
+      <Toolbar sx={{ py: 2 }}>
+        <Avatar
+          sx={{
+            bgcolor: "#2563EB",
+            width: 54,
+            height: 54,
+            mr: 2,
+          }}
+        >
+          <AutoAwesome />
+        </Avatar>
 
-      <div className="px-8 py-8 border-b border-slate-200">
+        <Box>
+          <Typography fontWeight={700} fontSize={20}>
+            LifeHub AI
+          </Typography>
 
-        <div className="flex items-center gap-3">
+          <Typography color="text.secondary" fontSize={13}>
+            Personal Workspace
+          </Typography>
+        </Box>
+      </Toolbar>
 
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-xl font-bold text-white">
-            L
-          </div>
+      <Divider />
 
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">
-              LifeHub AI
-            </h1>
+      <Box sx={{ p: 3 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: "#94A3B8",
+            fontWeight: 700,
+            letterSpacing: 2,
+          }}
+        >
+          WORKSPACE
+        </Typography>
 
-            <p className="text-sm text-slate-500">
-              Personal Workspace
-            </p>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Navigation */}
-
-      <div className="flex-1 overflow-y-auto px-5 py-6">
-
-        <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-          Workspace
-        </p>
-
-        <div className="space-y-2">
-
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-
+        <List sx={{ mt: 2 }}>
+          {menu.map((item) => {
             const active =
-              item.href !== "#" &&
-              (pathname === item.href ||
-                pathname.startsWith(item.href + "/"));
+              item.path !== "#" &&
+              location.pathname.startsWith(item.path);
 
             return (
-              <Link
-                key={item.title}
-                href={item.disabled ? "#" : item.href}
-                className={`group flex items-center justify-between rounded-xl px-4 py-3 transition-all duration-200 ${
-                  active
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-slate-700 hover:bg-slate-100"
-                } ${item.disabled ? "pointer-events-none opacity-60" : ""}`}
+              <ListItemButton
+                key={item.text}
+                disabled={item.disabled}
+                onClick={() =>
+                  !item.disabled && navigate(item.path)
+                }
+                sx={{
+                  mb: 1,
+                  borderRadius: 3,
+
+                  bgcolor: active ? "#2563EB" : "transparent",
+
+                  color: active ? "#fff" : "#334155",
+
+                  "&:hover": {
+                    bgcolor: active
+                      ? "#1D4ED8"
+                      : "#EEF2FF",
+                  },
+                }}
               >
-                <div className="flex items-center gap-3">
+                <ListItemIcon
+                  sx={{
+                    color: active ? "#fff" : "#64748B",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
 
-                  <Icon size={20} />
-
-                  <span className="font-medium">
-                    {item.title}
-                  </span>
-
-                </div>
+                <ListItemText primary={item.text} />
 
                 {item.disabled && (
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
-                    Soon
-                  </span>
+                  <Chip
+                    size="small"
+                    label="Soon"
+                    color="default"
+                  />
                 )}
-              </Link>
+              </ListItemButton>
             );
           })}
+        </List>
+      </Box>
 
-        </div>
+      <Box sx={{ flexGrow: 1 }} />
 
-      </div>
-
-      {/* Storage */}
-
-      <div className="mx-5 mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-
-        <div className="flex items-center gap-2">
-
-          <HardDrive
-            size={18}
-            className="text-blue-600"
-          />
-
-          <span className="font-semibold text-slate-800">
-            Storage
-          </span>
-
-        </div>
-
-        <p className="mt-3 text-sm text-slate-500">
-          0 MB of 2 GB used
-        </p>
-
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
-
-          <div className="h-full w-0 rounded-full bg-blue-600"></div>
-
-        </div>
-
-      </div>
-
-      {/* Logout */}
-
-      <div className="border-t border-slate-200 p-5">
-
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-red-200 py-3 font-semibold text-red-600 transition hover:bg-red-50"
+      <Box sx={{ p: 2 }}>
+        <Box
+          sx={{
+            bgcolor: "#2563EB",
+            color: "white",
+            p: 2.5,
+            borderRadius: 3,
+          }}
         >
-          <LogOut size={18} />
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={1}
+            mb={2}
+          >
+            <Storage />
+            <Typography fontWeight={600}>
+              Cloud Storage
+            </Typography>
+          </Box>
+
+          <Typography variant="body2">
+            0 MB of 2 GB Used
+          </Typography>
+
+          <LinearProgress
+            variant="determinate"
+            value={5}
+            sx={{
+              mt: 2,
+              height: 8,
+              borderRadius: 5,
+              bgcolor: "rgba(255,255,255,.25)",
+
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "#fff",
+              },
+            }}
+          />
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Box display="flex" alignItems="center" gap={2} mb={2}>
+          <Avatar sx={{ bgcolor: "#2563EB" }}>S</Avatar>
+
+          <Box>
+            <Typography fontWeight={600}>
+              Welcome
+            </Typography>
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
+              LifeHub User
+            </Typography>
+          </Box>
+        </Box>
+
+        <Button
+          fullWidth
+          color="error"
+          variant="outlined"
+          startIcon={<Logout />}
+          onClick={logout}
+          sx={{
+            borderRadius: 3,
+            py: 1.3,
+            textTransform: "none",
+            fontWeight: 600,
+          }}
+        >
           Logout
-        </button>
-
-      </div>
-
-    </aside>
+        </Button>
+      </Box>
+    </Drawer>
   );
 }

@@ -1,21 +1,35 @@
 "use client";
 
 import {
-  Eye,
-  Trash2,
+  Visibility,
+  Delete,
   Download,
-  Calendar,
-  HardDrive,
-  FileText,
+  CalendarMonth,
+  Storage,
+  PictureAsPdf,
   Image,
-  File,
-} from "lucide-react";
+  InsertDriveFile,
+} from "@mui/icons-material";
+
+import {
+  Card,
+  CardContent,
+  Box,
+  Typography,
+  Chip,
+  IconButton,
+  Tooltip,
+  Stack,
+} from "@mui/material";
+
 
 export default function DocumentCard({
   document,
   onView,
   onDelete,
 }) {
+
+
   const formattedDate = new Date(
     document.created_at
   ).toLocaleDateString("en-IN", {
@@ -24,108 +38,409 @@ export default function DocumentCard({
     year: "numeric",
   });
 
+
+
   const fileSize = (
     document.file_size /
     1024 /
     1024
   ).toFixed(2);
 
+
+
   const extension =
-    document.file_name.split(".").pop()?.toLowerCase() || "";
+    document.file_name
+      ?.split(".")
+      .pop()
+      ?.toLowerCase() || "";
+
+
 
   const getIcon = () => {
-    if (extension === "pdf")
-      return <FileText size={42} className="text-red-500" />;
 
-    if (
-      ["png", "jpg", "jpeg", "gif", "webp"].includes(extension)
-    )
-      return <Image size={42} className="text-green-600" />;
+    if(extension==="pdf"){
 
-    return <File size={42} className="text-blue-600" />;
+      return (
+        <PictureAsPdf
+          sx={{
+            fontSize:55,
+            color:"error.main"
+          }}
+        />
+      );
+
+    }
+
+
+    if(
+      [
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "webp"
+      ].includes(extension)
+    ){
+
+      return (
+        <Image
+          sx={{
+            fontSize:55,
+            color:"success.main"
+          }}
+        />
+      );
+
+    }
+
+
+    return (
+      <InsertDriveFile
+
+        sx={{
+          fontSize:55,
+          color:"primary.main"
+        }}
+
+      />
+    );
+
   };
 
+
+
+
   return (
-    <div className="group overflow-hidden rounded-3xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-      {/* File Icon */}
+    <Card
 
-      <div className="flex justify-center bg-slate-50 py-10">
+      elevation={2}
+
+      sx={{
+
+        borderRadius:4,
+
+        overflow:"hidden",
+
+        transition:"all 0.3s ease",
+
+        "&:hover":{
+
+          transform:"translateY(-6px)",
+
+          boxShadow:
+          "0 12px 30px rgba(0,0,0,0.12)"
+
+        }
+
+      }}
+
+    >
+
+
+      {/* File Icon Area */}
+
+      <Box
+
+        sx={{
+
+          height:180,
+
+          backgroundColor:
+          "grey.100",
+
+          display:"flex",
+
+          alignItems:"center",
+
+          justifyContent:"center"
+
+        }}
+
+      >
 
         {getIcon()}
 
-      </div>
+      </Box>
+
+
+
+
 
       {/* Content */}
 
-      <div className="space-y-5 p-6">
+      <CardContent
 
-        <div>
+        sx={{
 
-          <h3
-            className="truncate text-lg font-bold text-slate-900"
-            title={document.file_name}
+          p:3
+
+        }}
+
+      >
+
+
+        {/* Title */}
+
+
+        <Typography
+
+          variant="h6"
+
+          fontWeight={700}
+
+          noWrap
+
+          title={document.file_name}
+
+          sx={{
+
+            mb:1
+
+          }}
+
+        >
+
+          {document.file_name}
+
+        </Typography>
+
+
+
+
+
+        {/* Category */}
+
+
+        <Chip
+
+          label={document.category}
+
+          size="small"
+
+          color="primary"
+
+          sx={{
+
+            fontWeight:600,
+
+            mb:3
+
+          }}
+
+        />
+
+
+
+
+
+
+        {/* Details */}
+
+
+        <Stack
+
+          spacing={1.5}
+
+          color="text.secondary"
+
+          fontSize={14}
+
+        >
+
+
+          <Box
+
+            sx={{
+
+              display:"flex",
+
+              alignItems:"center",
+
+              gap:1
+
+            }}
+
           >
-            {document.file_name}
-          </h3>
 
-          <span className="mt-3 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-            {document.category}
-          </span>
+            <Storage fontSize="small"/>
 
-        </div>
+            <Typography variant="body2">
 
-        <div className="space-y-3 text-sm text-slate-500">
+              {fileSize} MB
 
-          <div className="flex items-center gap-2">
+            </Typography>
 
-            <HardDrive size={16} />
 
-            <span>{fileSize} MB</span>
+          </Box>
 
-          </div>
 
-          <div className="flex items-center gap-2">
 
-            <Calendar size={16} />
 
-            <span>{formattedDate}</span>
 
-          </div>
+          <Box
 
-        </div>
+            sx={{
 
-        {/* Buttons */}
+              display:"flex",
 
-        <div className="grid grid-cols-3 gap-3 pt-2">
+              alignItems:"center",
 
-          <button
-            onClick={() => onView(document.id)}
-            className="flex items-center justify-center rounded-xl border border-slate-200 py-3 transition hover:bg-slate-100"
-            title="View"
+              gap:1
+
+            }}
+
           >
-            <Eye size={18} />
-          </button>
 
-          <button
-            className="flex items-center justify-center rounded-xl border border-slate-200 py-3 transition hover:bg-slate-100"
-            title="Download"
-          >
-            <Download size={18} />
-          </button>
+            <CalendarMonth fontSize="small"/>
 
-          <button
-            onClick={() => onDelete(document.id)}
-            className="flex items-center justify-center rounded-xl border border-red-200 py-3 text-red-600 transition hover:bg-red-50"
-            title="Delete"
-          >
-            <Trash2 size={18} />
-          </button>
 
-        </div>
+            <Typography variant="body2">
 
-      </div>
+              {formattedDate}
 
-    </div>
+            </Typography>
+
+
+          </Box>
+
+
+        </Stack>
+
+
+
+
+
+
+
+        {/* Actions */}
+
+
+        <Stack
+
+          direction="row"
+
+          spacing={1.5}
+
+          mt={3}
+
+        >
+
+
+
+          <Tooltip title="View">
+
+
+            <IconButton
+
+              onClick={()=>onView(document.id)}
+
+              sx={{
+
+                flex:1,
+
+                border:1,
+
+                borderColor:"divider",
+
+                borderRadius:2
+
+              }}
+
+            >
+
+              <Visibility/>
+
+            </IconButton>
+
+
+          </Tooltip>
+
+
+
+
+
+          <Tooltip title="Download">
+
+
+            <IconButton
+
+              sx={{
+
+                flex:1,
+
+                border:1,
+
+                borderColor:"divider",
+
+                borderRadius:2
+
+              }}
+
+            >
+
+              <Download/>
+
+            </IconButton>
+
+
+          </Tooltip>
+
+
+
+
+
+
+          <Tooltip title="Delete">
+
+
+            <IconButton
+
+
+              onClick={()=>onDelete(document.id)}
+
+
+              sx={{
+
+                flex:1,
+
+                border:1,
+
+                borderColor:"error.light",
+
+                borderRadius:2,
+
+                color:"error.main",
+
+                "&:hover":{
+
+                  backgroundColor:"error.light",
+
+                  color:"white"
+
+                }
+
+              }}
+
+            >
+
+              <Delete/>
+
+            </IconButton>
+
+
+          </Tooltip>
+
+
+
+        </Stack>
+
+
+      </CardContent>
+
+
+    </Card>
+
   );
+
 }

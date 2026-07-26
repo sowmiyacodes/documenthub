@@ -2,8 +2,8 @@
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
-import { useRouter } from "next/navigation";
 
 
 export default function LoginModal({
@@ -11,7 +11,7 @@ export default function LoginModal({
   onClose,
   openRegister,
 }) {
-    const router = useRouter();
+  const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -28,51 +28,50 @@ export default function LoginModal({
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await fetch("http://localhost:5000/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-      }),
-    });
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-  toast.error(data.message);
-  return;
-}
+      if (!response.ok) {
+        toast.error(data.message);
+        return;
+      }
 
-// Success Toast
-toast.success("Welcome back!");
+      // Success Toast
+      toast.success("Welcome back!");
 
-// Save authentication data
-localStorage.setItem("token", data.token);
-localStorage.setItem("user", JSON.stringify(data.user));
+      // Save authentication data
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-// Clear the form
-setFormData({
-  email: "",
-  password: "",
-});
+      // Clear the form
+      setFormData({
+        email: "",
+        password: "",
+      });
 
-// Close the login modal
-onClose();
+      // Close the login modal
+      onClose();
 
-// Redirect to dashboard
-router.push("/dashboard");
-
-  } catch (error) {
-    console.error("Login Error:", error);
-    alert("Something went wrong. Please try again.");
-  }
-};
+      // Redirect to dashboard
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
 
   return (
     <Modal

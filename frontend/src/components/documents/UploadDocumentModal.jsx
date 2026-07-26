@@ -1,233 +1,733 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, X, FileText, Loader2 } from "lucide-react";
+
+import {
+  Upload,
+  Close,
+  Description,
+} from "@mui/icons-material";
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  TextField,
+  MenuItem,
+  CircularProgress,
+  Paper,
+} from "@mui/material";
+
+
 import { uploadDocument } from "@/services/document";
+
+
 
 export default function UploadDocumentModal({
   isOpen,
   onClose,
   onUploadSuccess,
 }) {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [category, setCategory] = useState("Others");
-  const [description, setDescription] = useState("");
-  const [uploading, setUploading] = useState(false);
 
-  if (!isOpen) return null;
 
-  const resetForm = () => {
+  const [selectedFile,setSelectedFile] = useState(null);
+
+  const [category,setCategory] = useState("Others");
+
+  const [description,setDescription] = useState("");
+
+  const [uploading,setUploading] = useState(false);
+
+
+
+  const resetForm = ()=>{
+
     setSelectedFile(null);
+
     setCategory("Others");
+
     setDescription("");
+
     setUploading(false);
+
   };
 
-  const handleClose = () => {
+
+
+  const handleClose = ()=>{
+
+    if(uploading) return;
+
     resetForm();
+
     onClose();
+
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+
+
+
+  const handleFileChange=(e)=>{
+
+    if(e.target.files.length>0){
+
+      setSelectedFile(
+        e.target.files[0]
+      );
+
     }
+
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
+
+
+
+
+  const handleUpload=async()=>{
+
+
+    if(!selectedFile){
+
       alert("Please select a document.");
+
       return;
+
     }
 
-    try {
+
+    try{
+
+
       setUploading(true);
+
+
 
       const formData = new FormData();
 
-      formData.append("document", selectedFile);
-      formData.append("category", category);
-      formData.append("description", description);
+
+
+      formData.append(
+        "document",
+        selectedFile
+      );
+
+
+      formData.append(
+        "category",
+        category
+      );
+
+
+      formData.append(
+        "description",
+        description
+      );
+
+
 
       await uploadDocument(formData);
 
-      alert("Document uploaded successfully.");
+
+
+      alert(
+        "Document uploaded successfully."
+      );
+
+
 
       resetForm();
 
       onClose();
 
-      if (onUploadSuccess) {
+
+      if(onUploadSuccess){
+
         onUploadSuccess();
+
       }
-    } catch (error) {
+
+
+
+    }catch(error){
+
+
       console.error(error);
+
 
       alert(
         error.response?.data?.message ||
-          "Failed to upload document."
+        "Failed to upload document."
       );
-    } finally {
+
+
+    }finally{
+
       setUploading(false);
+
     }
+
+
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
 
-      <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl">
 
-        {/* Header */}
 
-        <div className="flex items-center justify-between border-b border-slate-200 px-8 py-6">
 
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">
-              Upload Document
-            </h2>
+return (
 
-            <p className="mt-1 text-sm text-slate-500">
-              Upload PDFs or Images securely.
-            </p>
-          </div>
+<Dialog
 
-          <button
-            onClick={handleClose}
-            disabled={uploading}
-            className="rounded-xl p-2 hover:bg-slate-100"
-          >
-            <X size={22} />
-          </button>
+open={isOpen}
 
-        </div>
+onClose={handleClose}
 
-        {/* Body */}
+fullWidth
 
-        <div className="space-y-6 p-8">
+maxWidth="sm"
 
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50 px-6 py-14 hover:bg-blue-100">
+>
 
-            <Upload
-              size={50}
-              className="text-blue-600"
-            />
 
-            <h3 className="mt-4 text-lg font-semibold">
-              Click to Upload
-            </h3>
+{/* Header */}
 
-            <p className="mt-2 text-sm text-slate-500">
-              PDF, PNG, JPG, JPEG
-            </p>
 
-            <input
-              type="file"
-              accept=".pdf,.png,.jpg,.jpeg"
-              className="hidden"
-              onChange={handleFileChange}
-            />
+<DialogTitle
 
-          </label>
+sx={{
 
-          {selectedFile && (
-            <div className="flex items-center gap-4 rounded-xl border bg-slate-50 p-4">
+display:"flex",
 
-              <FileText
-                size={28}
-                className="text-blue-600"
-              />
+justifyContent:"space-between",
 
-              <div>
+alignItems:"center",
 
-                <h4 className="font-semibold">
-                  {selectedFile.name}
-                </h4>
+fontWeight:700
 
-                <p className="text-sm text-slate-500">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
+}}
 
-              </div>
+>
 
-            </div>
-          )}
 
-          <div>
+<Box>
 
-            <label className="mb-2 block font-medium">
-              Category
-            </label>
 
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-xl border p-3"
-            >
-              <option>Others</option>
-              <option>Identity</option>
-              <option>Education</option>
-              <option>Medical</option>
-              <option>Financial</option>
-              <option>Legal</option>
-            </select>
+<Typography
 
-          </div>
+variant="h5"
 
-          <div>
+fontWeight={700}
 
-            <label className="mb-2 block font-medium">
-              Description
-            </label>
+>
 
-            <textarea
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
-              className="w-full rounded-xl border p-4"
-            />
+Upload Document
 
-          </div>
+</Typography>
 
-        </div>
 
-        {/* Footer */}
+<Typography
 
-        <div className="flex justify-end gap-4 border-t px-8 py-6">
+variant="body2"
 
-          <button
-            onClick={handleClose}
-            disabled={uploading}
-            className="rounded-xl border px-6 py-3"
-          >
-            Cancel
-          </button>
+color="text.secondary"
 
-          <button
-            onClick={handleUpload}
-            disabled={uploading}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-          >
-            {uploading ? (
-              <>
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload size={18} />
-                Upload
-              </>
-            )}
-          </button>
+mt={0.5}
 
-        </div>
+>
 
-      </div>
+Upload PDFs or Images securely.
 
-    </div>
-  );
+</Typography>
+
+
+</Box>
+
+
+
+<Button
+
+onClick={handleClose}
+
+disabled={uploading}
+
+sx={{
+
+minWidth:40
+
+}}
+
+>
+
+<Close/>
+
+</Button>
+
+
+
+</DialogTitle>
+
+
+
+
+
+
+{/* Body */}
+
+
+<DialogContent>
+
+
+<Box
+
+sx={{
+
+display:"flex",
+
+flexDirection:"column",
+
+gap:3,
+
+mt:2
+
+}}
+
+>
+
+
+
+
+
+{/* Upload Area */}
+
+
+<label htmlFor="document-upload">
+
+
+<Box
+
+component="div"
+
+sx={{
+
+border:"2px dashed",
+
+borderColor:"primary.light",
+
+backgroundColor:"primary.50",
+
+borderRadius:4,
+
+p:6,
+
+textAlign:"center",
+
+cursor:"pointer",
+
+transition:"0.3s",
+
+"&:hover":{
+
+backgroundColor:"primary.100"
+
+}
+
+}}
+
+>
+
+
+<Upload
+
+sx={{
+
+fontSize:55,
+
+color:"primary.main"
+
+}}
+
+/>
+
+
+
+<Typography
+
+variant="h6"
+
+fontWeight={700}
+
+mt={2}
+
+>
+
+Click to Upload
+
+</Typography>
+
+
+
+<Typography
+
+variant="body2"
+
+color="text.secondary"
+
+mt={1}
+
+>
+
+PDF, PNG, JPG, JPEG
+
+</Typography>
+
+
+
+<input
+
+id="document-upload"
+
+type="file"
+
+hidden
+
+accept=".pdf,.png,.jpg,.jpeg"
+
+onChange={handleFileChange}
+
+/>
+
+
+
+</Box>
+
+
+</label>
+
+
+
+
+
+
+
+{/* Selected File */}
+
+
+
+{
+
+selectedFile &&
+
+
+<Paper
+
+variant="outlined"
+
+sx={{
+
+p:2,
+
+display:"flex",
+
+alignItems:"center",
+
+gap:2,
+
+borderRadius:3
+
+}}
+
+>
+
+
+<Description
+
+sx={{
+
+fontSize:35,
+
+color:"primary.main"
+
+}}
+
+/>
+
+
+<Box>
+
+
+<Typography
+
+fontWeight={600}
+
+noWrap
+
+>
+
+{selectedFile.name}
+
+</Typography>
+
+
+<Typography
+
+variant="body2"
+
+color="text.secondary"
+
+>
+
+{
+
+(
+selectedFile.size /
+1024 /
+1024
+).toFixed(2)
+
+}
+
+MB
+
+</Typography>
+
+
+</Box>
+
+
+
+</Paper>
+
+
+}
+
+
+
+
+
+
+
+
+{/* Category */}
+
+
+
+<TextField
+
+
+select
+
+
+label="Category"
+
+
+value={category}
+
+
+onChange={(e)=>setCategory(e.target.value)}
+
+
+fullWidth
+
+
+>
+
+
+<MenuItem value="Others">
+Others
+</MenuItem>
+
+
+<MenuItem value="Identity">
+Identity
+</MenuItem>
+
+
+<MenuItem value="Education">
+Education
+</MenuItem>
+
+
+<MenuItem value="Medical">
+Medical
+</MenuItem>
+
+
+<MenuItem value="Financial">
+Financial
+</MenuItem>
+
+
+<MenuItem value="Legal">
+Legal
+</MenuItem>
+
+
+</TextField>
+
+
+
+
+
+
+
+
+
+{/* Description */}
+
+
+<TextField
+
+
+label="Description"
+
+
+placeholder="Optional description"
+
+
+multiline
+
+
+rows={4}
+
+
+value={description}
+
+
+onChange={(e)=>setDescription(e.target.value)}
+
+
+fullWidth
+
+
+/>
+
+
+
+
+</Box>
+
+
+</DialogContent>
+
+
+
+
+
+
+
+
+{/* Footer */}
+
+
+
+<DialogActions
+
+sx={{
+
+px:3,
+
+pb:3,
+
+gap:2
+
+}}
+
+>
+
+
+<Button
+
+variant="outlined"
+
+onClick={handleClose}
+
+disabled={uploading}
+
+sx={{
+
+borderRadius:2,
+
+px:3
+
+}}
+
+>
+
+Cancel
+
+</Button>
+
+
+
+
+<Button
+
+variant="contained"
+
+onClick={handleUpload}
+
+disabled={uploading}
+
+
+startIcon={
+
+uploading ?
+
+<CircularProgress
+
+size={18}
+
+color="inherit"
+
+/>
+
+:
+
+<Upload/>
+
+}
+
+
+sx={{
+
+borderRadius:2,
+
+px:4
+
+}}
+
+>
+
+
+{
+
+uploading
+
+?
+
+"Uploading..."
+
+:
+
+"Upload"
+
+}
+
+
+</Button>
+
+
+
+</DialogActions>
+
+
+
+</Dialog>
+
+
+);
+
 }
