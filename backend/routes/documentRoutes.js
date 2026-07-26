@@ -1,0 +1,42 @@
+const express = require("express");
+const router = express.Router();
+
+const upload = require("../middleware/uploadMiddleware");
+const authenticateUser = require("../middleware/authMiddleware");
+
+const {
+    uploadDocument,
+    getDocuments,
+    viewDocument,
+     deleteDocument,
+} = require("../controllers/documentController");
+
+// Get all documents of logged-in user
+router.get(
+    "/",
+    authenticateUser,
+    getDocuments
+);
+
+// View a document (Generate Signed URL)
+router.get(
+    "/:id/view",
+    authenticateUser,
+    viewDocument
+);
+
+// Upload a document
+router.post(
+    "/upload",
+    authenticateUser,
+    upload.single("document"),
+    uploadDocument
+);
+
+router.delete(
+    "/:id",
+    authenticateUser,
+    deleteDocument
+);
+
+module.exports = router;
