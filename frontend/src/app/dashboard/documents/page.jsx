@@ -123,9 +123,9 @@ export default function DocumentsPage() {
 
 
     const matchSearch =
-      doc.file_name
-      ?.toLowerCase()
-      .includes(search.toLowerCase());
+  doc.original_name
+    ?.toLowerCase()
+    .includes(search.toLowerCase());
 
 
     const matchCategory =
