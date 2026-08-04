@@ -27,7 +27,6 @@ export default function DocumentCard({
   onView,
   onDelete,
 }) {
-
   const formattedDate = document.uploaded_at
     ? new Date(document.uploaded_at).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -41,32 +40,26 @@ export default function DocumentCard({
     : "0";
 
   const extension =
-    document.original_name
-      ?.split(".")
-      .pop()
-      ?.toLowerCase() || "";
+    document.original_name?.split(".").pop()?.toLowerCase() || "";
 
   const getIcon = () => {
-
     if (extension === "pdf") {
       return (
         <PictureAsPdf
           sx={{
-            fontSize: 55,
-            color: "error.main",
+            fontSize: 42,
+            color: "#ef4444",
           }}
         />
       );
     }
 
-    if (
-      ["png", "jpg", "jpeg", "gif", "webp"].includes(extension)
-    ) {
+    if (["png", "jpg", "jpeg", "gif", "webp"].includes(extension)) {
       return (
         <Image
           sx={{
-            fontSize: 55,
-            color: "success.main",
+            fontSize: 42,
+            color: "#22c55e",
           }}
         />
       );
@@ -75,8 +68,8 @@ export default function DocumentCard({
     return (
       <InsertDriveFile
         sx={{
-          fontSize: 55,
-          color: "primary.main",
+          fontSize: 42,
+          color: "#2563eb",
         }}
       />
     );
@@ -84,33 +77,48 @@ export default function DocumentCard({
 
   return (
     <Card
-      elevation={2}
+      elevation={1}
       sx={{
-        borderRadius: 4,
+        width: "100%",
+        maxWidth: 280,
+        borderRadius: 3,
         overflow: "hidden",
-        transition: "0.25s",
+        transition: "all .25s ease",
+        border: "1px solid",
+        borderColor: "grey.200",
+
         "&:hover": {
-          transform: "translateY(-5px)",
-          boxShadow: "0 10px 30px rgba(0,0,0,.15)",
+          transform: "translateY(-4px)",
+          boxShadow: "0 12px 24px rgba(0,0,0,.12)",
         },
       }}
     >
+      {/* File Preview */}
       <Box
         sx={{
-          height: 180,
-          bgcolor: "grey.100",
+          height: 95,
+          bgcolor: "#f8fafc",
           display: "flex",
-          justifyContent: "center",
           alignItems: "center",
+          justifyContent: "center",
+          borderBottom: "1px solid",
+          borderColor: "grey.200",
         }}
       >
         {getIcon()}
       </Box>
 
-      <CardContent>
-
+      <CardContent
+        sx={{
+          p: 1.8,
+          "&:last-child": {
+            pb: 1.8,
+          },
+        }}
+      >
+        {/* File Name */}
         <Typography
-          variant="h6"
+          fontSize={15}
           fontWeight={700}
           noWrap
           title={document.original_name}
@@ -118,101 +126,144 @@ export default function DocumentCard({
           {document.original_name}
         </Typography>
 
+        {/* Description */}
         <Typography
           variant="body2"
           color="text.secondary"
           sx={{
-            mb: 2,
-            wordBreak: "break-all",
+            mt: 0.5,
+            mb: 1.3,
+            fontSize: 12.5,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            minHeight: 34,
           }}
         >
-          {document.description || "No description"}
+          {document.description || "No description available"}
         </Typography>
 
+        {/* Category */}
         <Chip
-          label={document.category}
+          label={document.category || "Others"}
           color="primary"
           size="small"
-          sx={{ mb: 2 }}
+          sx={{
+            height: 24,
+            fontSize: 11,
+            fontWeight: 600,
+            mb: 1.3,
+          }}
         />
 
-        <Stack spacing={1} sx={{ mb: 3 }}>
+        {/* Details */}
+        <Stack spacing={0.7} sx={{ mb: 1.5 }}>
+          <Box display="flex" alignItems="center" gap={0.8}>
+            <Storage sx={{ fontSize: 16, color: "text.secondary" }} />
 
-          <Box display="flex" alignItems="center" gap={1}>
-            <Storage fontSize="small" />
-            <Typography variant="body2">
+            <Typography
+              variant="caption"
+              color="text.secondary"
+            >
               {fileSize} MB
             </Typography>
           </Box>
 
-          <Box display="flex" alignItems="center" gap={1}>
-            <CalendarMonth fontSize="small" />
-            <Typography variant="body2">
+          <Box display="flex" alignItems="center" gap={0.8}>
+            <CalendarMonth
+              sx={{ fontSize: 16, color: "text.secondary" }}
+            />
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+            >
               {formattedDate}
             </Typography>
           </Box>
 
           <Typography
             variant="caption"
-            color="text.secondary"
+            sx={{
+              color: "primary.main",
+              fontWeight: 600,
+            }}
           >
             {document.file_type}
           </Typography>
-
         </Stack>
 
-        <Stack direction="row" spacing={1}>
-
+        {/* Actions */}
+        <Stack
+          direction="row"
+          spacing={1}
+          justifyContent="center"
+        >
           <Tooltip title="View">
-
             <IconButton
+              size="small"
               onClick={() => onView(document.id)}
               sx={{
-                flex: 1,
+                width: 36,
+                height: 36,
                 border: "1px solid",
-                borderColor: "divider",
+                borderColor: "grey.300",
+
+                "&:hover": {
+                  bgcolor: "primary.light",
+                  color: "white",
+                  borderColor: "primary.main",
+                },
               }}
             >
-              <Visibility />
+              <Visibility fontSize="small" />
             </IconButton>
-
           </Tooltip>
 
           <Tooltip title="Download">
-
             <IconButton
+              size="small"
               onClick={() => onView(document.id)}
               sx={{
-                flex: 1,
+                width: 36,
+                height: 36,
                 border: "1px solid",
-                borderColor: "divider",
+                borderColor: "grey.300",
+
+                "&:hover": {
+                  bgcolor: "success.light",
+                  color: "white",
+                  borderColor: "success.main",
+                },
               }}
             >
-              <Download />
+              <Download fontSize="small" />
             </IconButton>
-
           </Tooltip>
 
           <Tooltip title="Delete">
-
             <IconButton
+              size="small"
               onClick={() => onDelete(document.id)}
               sx={{
-                flex: 1,
+                width: 36,
+                height: 36,
                 border: "1px solid",
                 borderColor: "error.main",
                 color: "error.main",
+
+                "&:hover": {
+                  bgcolor: "error.main",
+                  color: "white",
+                },
               }}
             >
-              <Delete />
+              <Delete fontSize="small" />
             </IconButton>
-
           </Tooltip>
-
         </Stack>
-
       </CardContent>
-
     </Card>
   );
 }

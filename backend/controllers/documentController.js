@@ -1,6 +1,6 @@
 const supabase = require("../config/supabase");
 const path = require("path");
-
+const { processDocument } = require("../ai/models/documentProcessor");
 const uploadDocument = async (req, res) => {
     try {
 
@@ -70,6 +70,11 @@ const uploadDocument = async (req, res) => {
                 message: dbError.message,
             });
         }
+
+        // Start AI processing in the background
+        processDocument(data[0].id).catch((error) => {
+            console.error("AI Processing Error:", error.message);
+        });
 
         return res.status(201).json({
             success: true,
@@ -230,10 +235,55 @@ const deleteDocument = async (req, res) => {
     }
 };
 
+const getProcessingStatus = async (req, res) => {
+    try {
+
+        const user_id = req.user.id;
+        const { id } = req.params;
+
+        const { data, error } = await supabase
+            .from("documents")
+            .select(`
+                id,
+                processing_status,
+                processing_error,
+                summary,
+                ai_category,
+                metadata,
+                processed_at
+            `)
+            .eq("id", id)
+            .eq("user_id", user_id)
+            .single();
+
+        if (error || !data) {
+            return res.status(404).json({
+                success: false,
+                message: "Document not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            document: data
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
 module.exports = {
     uploadDocument,
      getDocuments,
     viewDocument,
     deleteDocument,
+    getProcessingStatus,
+
 
 };

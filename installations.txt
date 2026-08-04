@@ -1,0 +1,11 @@
+npm install tesseract.js
+npm install pdf-parse@1.1.1npm install @xenova/transformers
+npm install @lancedb/lancedb
+npm install natural
+npm install compromise
+npm install pdfjs-dist canvas
+
+npm install @huggingface/transformers
+
+
+npm install @google/genai

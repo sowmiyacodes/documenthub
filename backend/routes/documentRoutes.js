@@ -8,7 +8,8 @@ const {
     uploadDocument,
     getDocuments,
     viewDocument,
-     deleteDocument,
+    deleteDocument,
+    getProcessingStatus,
 } = require("../controllers/documentController");
 
 // Get all documents of logged-in user
@@ -16,6 +17,13 @@ router.get(
     "/",
     authenticateUser,
     getDocuments
+);
+
+
+router.get(
+    "/:id/status",
+    authenticateUser,
+    getProcessingStatus
 );
 
 // View a document (Generate Signed URL)

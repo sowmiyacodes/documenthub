@@ -1,0 +1,158 @@
+                    Upload Document
+                           │
+                           ▼
+                 Document Service
+                           │
+                           ▼
+               Document Processor
+                           │
+      ┌────────────┬─────────────┬─────────────┐
+      ▼            ▼             ▼             ▼
+    OCR       Metadata      Category      Summary
+      │
+      ▼
+   Clean Text
+      │
+      ▼
+ Split into Chunks
+      │
+      ▼
+ Generate Embeddings
+      │
+      ▼
+ Store in pgvector
+
+
+ Purpose	Model
+Embeddings	Xenova/all-MiniLM-L6-v2
+Summarization & RAG	Xenova/flan-t5-base
+
+Why flan-t5-base?
+
+Good summarization quality
+Can answer questions over retrieved document text
+Supported by @xenova/transformers
+No Ollama required
+Works with the same library you're already using
+
+That means one model will power:
+
+Document summaries
+RAG answers
+
+instead of maintaining two different LLMs.
+
+
+/////////////////
+
+instead of lancedb for the vectors use supabase pgvector
+
+Upload
+
+↓
+
+OCR
+
+↓
+
+Metadata
+
+↓
+
+Category
+
+↓
+
+Summary
+
+↓
+
+Embeddings
+
+↓
+
+Supabase pgvector
+
+↓
+
+Semantic Search
+
+↓
+
+RAG
+
+
+------------------------------------
+first llm part
+
+We'll use FLAN-T5 (Xenova/flan-t5-base) to generate concise summaries that 
+are stored in the documents.summary column and later reused for the UI and RAG. 
+This will be your first generative AI component.
+
+
+
+------------
+what rpc does?
+Suppose user asks
+
+"When does my passport expire?"
+
+Pipeline becomes
+
+Question
+
+↓
+
+Embedding
+
+↓
+
+match_document_chunks()
+
+↓
+
+Top 5 Relevant Chunks
+
+↓
+
+FLAN-T5
+
+↓
+
+Answer
+
+
+
+----------------------------------------------
+Why distilbart-cnn-6-6 instead of FLAN-T5?
+
+I changed the recommendation after reviewing the implementation.
+
+For document summaries only:
+
+DistilBART
+
+is:
+
+Faster
+Smaller
+Better summarizer
+Lower RAM
+Better on free deployments
+
+
+
+----------------------
+You now have a working AI document processing pipeline:
+
+✅ Authentication
+✅ Document Upload
+✅ CRUD Operations
+✅ OCR (PDF/JPG/PNG)
+✅ Metadata Extraction
+✅ AI Categorization
+✅ AI Summarization (Gemini)
+✅ Embedding Generation
+✅ Chunk Storage
+✅ Vector Storage
+✅ Processing Status
