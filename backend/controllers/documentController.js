@@ -125,6 +125,42 @@ const getDocuments = async (req, res) => {
 
     }
 };
+
+
+const getDocumentById = async (req, res) => {
+    try {
+
+        const user_id = req.user.id;
+        const { id } = req.params;
+
+        const { data, error } = await supabase
+            .from("documents")
+            .select("*")
+            .eq("id", id)
+            .eq("user_id", user_id)
+            .single();
+
+        if (error || !data) {
+            return res.status(404).json({
+                success: false,
+                message: "Document not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            document: data
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
 const viewDocument = async (req, res) => {
     try {
 
@@ -281,6 +317,7 @@ const getProcessingStatus = async (req, res) => {
 module.exports = {
     uploadDocument,
      getDocuments,
+    getDocumentById,
     viewDocument,
     deleteDocument,
     getProcessingStatus,

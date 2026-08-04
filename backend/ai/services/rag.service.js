@@ -4,9 +4,13 @@ const embeddingService = require("./embedding.service");
 const llmService = require("./llm.service");
 
 /**
- * Ask a question about a user's uploaded documents
+ * Ask AI about uploaded documents
  */
-const askQuestion = async ({ userId, question }) => {
+const askQuestion = async ({
+    userId,
+    documentId,
+    question,
+}) => {
     try {
 
         if (!question || question.trim().length === 0) {
@@ -17,12 +21,13 @@ const askQuestion = async ({ userId, question }) => {
         const queryEmbedding =
             await embeddingService.generateEmbedding(question);
 
-        // Retrieve most relevant chunks
+        // Retrieve relevant chunks
         const { data, error } = await supabase.rpc(
             "match_document_chunks",
             {
                 query_embedding: queryEmbedding,
                 match_user: userId,
+                match_document: documentId || null,
                 match_count: 5,
             }
         );
@@ -34,17 +39,15 @@ const askQuestion = async ({ userId, question }) => {
         if (!data || data.length === 0) {
             return {
                 answer:
-                    "I couldn't find any relevant information in your uploaded documents.",
+                    "I couldn't find any relevant information in the selected document.",
                 sources: [],
             };
         }
 
-        // Combine retrieved chunks into one context
         const context = data
-            .map((chunk) => chunk.chunk_text)
+            .map(chunk => chunk.chunk_text)
             .join("\n\n");
 
-        // Generate final answer
         const answer = await llmService.generateAnswer({
             question,
             context,
@@ -52,14 +55,16 @@ const askQuestion = async ({ userId, question }) => {
 
         return {
             answer,
-            sources: data.map((chunk) => ({
+            sources: data.map(chunk => ({
                 documentId: chunk.document_id,
                 similarity: chunk.similarity,
             })),
         };
 
     } catch (error) {
+
         throw new Error(`RAG Error: ${error.message}`);
+
     }
 };
 

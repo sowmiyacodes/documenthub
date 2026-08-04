@@ -1,5 +1,11 @@
 "use client";
+import { useState } from "react";
 
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import SmartToyRoundedIcon from "@mui/icons-material/SmartToyRounded";
+
+import SummaryDialog from "../AI/SummaryDialog";
+import AskAIDialog from "../AI/AskAIDialog";
 import {
   Paper,
   Table,
@@ -28,6 +34,10 @@ export default function DocumentTable({
   onView,
   onDelete,
 }) {
+    const [summaryOpen, setSummaryOpen] = useState(false);
+const [askOpen, setAskOpen] = useState(false);
+
+const [selectedDocument, setSelectedDocument] = useState(null);
   const getIcon = (name) => {
     const ext =
       name?.split(".").pop()?.toLowerCase() || "";
@@ -67,6 +77,7 @@ export default function DocumentTable({
   };
 
   return (
+    <>
     <Paper
       elevation={0}
       sx={{
@@ -205,7 +216,28 @@ export default function DocumentTable({
                     </IconButton>
 
                   </Tooltip>
-
+                  <Tooltip title="AI Summary">
+                    <IconButton
+                        color="warning"
+                        onClick={() => {
+                        setSelectedDocument(doc.id);
+                        setSummaryOpen(true);
+                        }}
+                    >
+                        <AutoAwesomeRoundedIcon />
+                    </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Ask AI">
+                        <IconButton
+                            color="secondary"
+                            onClick={() => {
+                            setSelectedDocument(doc.id);
+                            setAskOpen(true);
+                            }}
+                        >
+                            <SmartToyRoundedIcon />
+                        </IconButton>
+                        </Tooltip>
                   <Tooltip title="Delete">
 
                     <IconButton
@@ -230,5 +262,17 @@ export default function DocumentTable({
 
       </Table>
     </Paper>
+    <SummaryDialog
+            open={summaryOpen}
+            onClose={() => setSummaryOpen(false)}
+            documentId={selectedDocument}
+        />
+
+        <AskAIDialog
+            open={askOpen}
+            onClose={() => setAskOpen(false)}
+            documentId={selectedDocument}
+        />
+    </>
   );
 }

@@ -1,5 +1,12 @@
 "use client";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import { useState } from "react";
+import SmartToyRoundedIcon from "@mui/icons-material/SmartToyRounded";
+import AskAIDialog from "../AI/AskAIDialog";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
+import SummaryDialog from "../AI/SummaryDialog";
+import StatusBadge from "../AI/StatusBadge";
 import {
   Visibility,
   Delete,
@@ -26,7 +33,11 @@ export default function DocumentCard({
   document,
   onView,
   onDelete,
+  onAskAI,
+  onDetails,
 }) {
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
   const formattedDate = document.uploaded_at
     ? new Date(document.uploaded_at).toLocaleDateString("en-IN", {
         day: "numeric",
@@ -76,6 +87,7 @@ export default function DocumentCard({
   };
 
   return (
+    <>
     <Card
       elevation={1}
       sx={{
@@ -145,17 +157,27 @@ export default function DocumentCard({
         </Typography>
 
         {/* Category */}
-        <Chip
-          label={document.category || "Others"}
-          color="primary"
-          size="small"
-          sx={{
-            height: 24,
-            fontSize: 11,
-            fontWeight: 600,
-            mb: 1.3,
-          }}
-        />
+       <Box
+  display="flex"
+  justifyContent="space-between"
+  alignItems="center"
+  mb={1.3}
+>
+  <Chip
+    label={document.ai_category || document.category || "Others"}
+    color="primary"
+    size="small"
+    sx={{
+      height: 24,
+      fontSize: 11,
+      fontWeight: 600,
+    }}
+  />
+
+  <StatusBadge
+    status={document.processing_status}
+  />
+</Box>
 
         {/* Details */}
         <Stack spacing={0.7} sx={{ mb: 1.5 }}>
@@ -241,7 +263,45 @@ export default function DocumentCard({
               <Download fontSize="small" />
             </IconButton>
           </Tooltip>
+          <Tooltip title="AI Summary">
+            <IconButton
+              size="small"
+              onClick={() => setSummaryOpen(true)}
+              sx={{
+                width: 36,
+                height: 36,
+                border: "1px solid",
+                borderColor: "warning.main",
 
+                "&:hover": {
+                  bgcolor: "warning.main",
+                  color: "white",
+                },
+              }}
+            >
+              <AutoAwesomeRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Ask AI">
+            <IconButton
+              size="small"
+              onClick={() => setAskOpen(true)}
+              sx={{
+                width: 36,
+                height: 36,
+                border: "1px solid",
+                borderColor: "secondary.main",
+
+                "&:hover": {
+                  bgcolor: "secondary.main",
+                  color: "white",
+                },
+              }}
+            >
+              <SmartToyRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Delete">
             <IconButton
               size="small"
@@ -265,5 +325,16 @@ export default function DocumentCard({
         </Stack>
       </CardContent>
     </Card>
+    <SummaryDialog
+      open={summaryOpen}
+      onClose={() => setSummaryOpen(false)}
+      documentId={document.id}
+    />
+    <AskAIDialog
+      open={askOpen}
+      onClose={() => setAskOpen(false)}
+      documentId={document.id}
+    />
+    </>
   );
 }

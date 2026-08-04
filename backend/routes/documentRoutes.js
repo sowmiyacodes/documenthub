@@ -7,6 +7,7 @@ const authenticateUser = require("../middleware/authMiddleware");
 const {
     uploadDocument,
     getDocuments,
+    getDocumentById,
     viewDocument,
     deleteDocument,
     getProcessingStatus,
@@ -24,6 +25,13 @@ router.get(
     "/:id/status",
     authenticateUser,
     getProcessingStatus
+);
+
+// Get a single document
+router.get(
+    "/:id",
+    authenticateUser,
+    getDocumentById
 );
 
 // View a document (Generate Signed URL)
