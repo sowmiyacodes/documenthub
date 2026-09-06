@@ -9,34 +9,38 @@ const summaryService = require("../services/summary.service");
 const embeddingService = require("../services/embedding.service");
 const vectorService = require("../services/vector.service");
 
+
 /*
 |--------------------------------------------------------------------------
 | Process Document
 |--------------------------------------------------------------------------
 |
-| Complete AI processing pipeline:
+| Complete AI pipeline:
 |
-| 1. Fetch document
-| 2. OCR
-| 3. Metadata extraction
-| 4. Category detection
-| 5. Structured entity extraction
-| 6. Summary generation
-| 7. Embeddings + vector storage
-| 8. Save AI results
+| 1. OCR
+| 2. Metadata extraction
+| 3. Category detection
+| 4. Structured entity extraction
+| 5. Summary generation
+| 6. Embeddings / vector storage
+| 7. Database update
 |
 |--------------------------------------------------------------------------
 */
 
 const processDocument = async (documentId) => {
+
     try {
+
         console.log(
             `Starting AI Processing for Document: ${documentId}`
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | STEP 1: Update Processing Status
+        | STEP 1
+        | Update processing status
         |--------------------------------------------------------------------------
         */
 
@@ -48,15 +52,18 @@ const processDocument = async (documentId) => {
             })
             .eq("id", documentId);
 
+
         if (statusError) {
             throw new Error(
                 `Failed to update processing status: ${statusError.message}`
             );
         }
 
+
         /*
         |--------------------------------------------------------------------------
-        | STEP 2: Fetch Document
+        | STEP 2
+        | Fetch document
         |--------------------------------------------------------------------------
         */
 
@@ -69,27 +76,39 @@ const processDocument = async (documentId) => {
             .eq("id", documentId)
             .single();
 
-        if (documentError || !document) {
+
+        if (
+            documentError ||
+            !document
+        ) {
             throw new Error(
-                documentError?.message ||
                 "Document not found."
             );
         }
+
 
         console.log(
             `Processing: ${document.original_name}`
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | STEP 3: OCR
+        | STEP 3
+        | OCR
         |--------------------------------------------------------------------------
         */
 
-        console.log("Step 1/7: Extracting text...");
+        console.log(
+            "Step 1/7: Extracting text..."
+        );
+
 
         const extractedText =
-            await ocrService.extractText(document);
+            await ocrService.extractText(
+                document
+            );
+
 
         if (
             !extractedText ||
@@ -100,71 +119,62 @@ const processDocument = async (documentId) => {
             );
         }
 
+
         console.log(
             `OCR completed. Characters extracted: ${extractedText.length}`
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | STEP 4: General Metadata
+        | STEP 4
+        | Metadata
         |--------------------------------------------------------------------------
         */
 
-        console.log("Step 2/7: Extracting metadata...");
+        console.log(
+            "Step 2/7: Extracting metadata..."
+        );
+
 
         const metadata =
             await metadataService.extractMetadata(
                 extractedText
             );
 
+
         console.log(
             "Metadata extracted successfully."
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | STEP 5: AI Category
+        | STEP 5
+        | Category
         |--------------------------------------------------------------------------
         */
 
-        console.log("Step 3/7: Detecting category...");
+        console.log(
+            "Step 3/7: Detecting category..."
+        );
+
 
         const aiCategory =
             await categoryService.detectCategory(
                 extractedText
             );
 
+
         console.log(
             `Detected category: ${aiCategory}`
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | STEP 6: Structured Entity Extraction
-        |--------------------------------------------------------------------------
-        |
-        | Example:
-        |
-        | Resume:
-        | {
-        |   name,
-        |   email,
-        |   phone,
-        |   degree,
-        |   institution,
-        |   cgpa,
-        |   skills
-        | }
-        |
-        | Aadhaar:
-        | {
-        |   name,
-        |   dateOfBirth,
-        |   gender,
-        |   aadhaarNumber,
-        |   address
-        | }
-        |
+        | STEP 6
+        | Structured Entity Extraction
         |--------------------------------------------------------------------------
         */
 
@@ -172,54 +182,28 @@ const processDocument = async (documentId) => {
             "Step 4/7: Extracting structured entities..."
         );
 
-        const entities =
+
+        const structuredData =
             await entityService.extractEntities(
                 extractedText
             );
 
+
         console.log(
-            "Detected document type:",
-            entities.documentType
+            `Detected document type: ${structuredData.documentType}`
         );
+
 
         console.log(
             "Structured entities:",
-            entities.fields
+            structuredData.entities
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Combine Existing Metadata + Structured Entities
-        |--------------------------------------------------------------------------
-        |
-        | We keep your existing metadata fields and add:
-        |
-        | metadata.entities
-        |
-        | metadata.structuredData
-        |
-        |--------------------------------------------------------------------------
-        */
-
-        const combinedMetadata = {
-            ...metadata,
-
-            documentType:
-                entities.documentType ||
-                metadata.documentType ||
-                "Others",
-
-            entities: entities.fields || {},
-
-            extraction: {
-                method: "rule-based",
-                version: "1.0",
-            },
-        };
 
         /*
         |--------------------------------------------------------------------------
-        | STEP 7: Generate Summary
+        | STEP 7
+        | Summary
         |--------------------------------------------------------------------------
         */
 
@@ -227,26 +211,39 @@ const processDocument = async (documentId) => {
             "Step 5/7: Generating summary..."
         );
 
+
         const summary =
             await summaryService.generateSummary(
                 extractedText
             );
 
-        console.log(
-            summary
-                ? "Summary generated successfully."
-                : "Summary generation returned empty result."
-        );
+
+        if (summary) {
+
+            console.log(
+                "Summary generated successfully."
+            );
+
+        } else {
+
+            console.log(
+                "Summary generation returned empty result."
+            );
+
+        }
+
 
         /*
         |--------------------------------------------------------------------------
-        | STEP 8: Generate Embeddings
+        | STEP 8
+        | Embeddings
         |--------------------------------------------------------------------------
         */
 
         console.log(
             "Step 6/7: Generating embeddings..."
         );
+
 
         await vectorService.storeEmbedding({
             documentId,
@@ -256,13 +253,16 @@ const processDocument = async (documentId) => {
             text: extractedText,
         });
 
+
         console.log(
             "Embeddings stored successfully."
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | STEP 9: Save Everything to Database
+        | STEP 9
+        | Update database
         |--------------------------------------------------------------------------
         */
 
@@ -270,38 +270,88 @@ const processDocument = async (documentId) => {
             "Step 7/7: Updating document..."
         );
 
+
         const {
             error: updateError,
         } = await supabase
             .from("documents")
             .update({
-                processing_status: "completed",
+
+                /*
+                |--------------------------------------------------------------------------
+                | Processing
+                |--------------------------------------------------------------------------
+                */
+
+                processing_status:
+                    "completed",
+
+                processing_error:
+                    null,
 
                 processed_at:
                     new Date().toISOString(),
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | OCR
+                |--------------------------------------------------------------------------
+                */
+
                 ocr_text:
                     extractedText,
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | Existing metadata
+                |--------------------------------------------------------------------------
+                */
+
                 metadata:
-                    combinedMetadata,
+                    metadata,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | AI category
+                |--------------------------------------------------------------------------
+                */
 
                 ai_category:
                     aiCategory,
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | Structured AI entities
+                |--------------------------------------------------------------------------
+                */
+
+                structured_data:
+                    structuredData,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Summary
+                |--------------------------------------------------------------------------
+                */
+
                 summary:
                     summary || null,
-
-                processing_error:
-                    null,
             })
             .eq("id", documentId);
 
+
         if (updateError) {
+
             throw new Error(
-                `Failed to save AI results: ${updateError.message}`
+                `Failed to update document: ${updateError.message}`
             );
         }
+
 
         /*
         |--------------------------------------------------------------------------
@@ -313,60 +363,61 @@ const processDocument = async (documentId) => {
             `AI Processing Completed: ${documentId}`
         );
 
-        return {
-            success: true,
-            documentId,
-            documentType:
-                entities.documentType,
-            category:
-                aiCategory,
-            metadata:
-                combinedMetadata,
-            summary,
-        };
 
     } catch (error) {
 
         console.error(
-            `AI Processing Failed for ${documentId}:`,
+            "AI Processing Error:",
             error
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | Save actual error instead of null
+        | Mark document as failed
         |--------------------------------------------------------------------------
         */
 
         try {
+
             await supabase
                 .from("documents")
                 .update({
-                    processing_status: "failed",
+
+                    processing_status:
+                        "failed",
 
                     processing_error:
-                        error.message ||
-                        "Unknown AI processing error.",
+                        error.message,
+
                 })
                 .eq("id", documentId);
 
-        } catch (dbError) {
+        } catch (updateError) {
 
             console.error(
-                "Failed to save processing error:",
-                dbError.message
+                "Failed to update processing error:",
+                updateError.message
             );
+
         }
+
 
         /*
         |--------------------------------------------------------------------------
-        | Re-throw error
+        | Important
+        |--------------------------------------------------------------------------
+        |
+        | Do NOT throw again here.
+        |
+        | The document upload has already succeeded.
+        | Only AI processing failed.
         |--------------------------------------------------------------------------
         */
 
-        throw error;
     }
 };
+
 
 module.exports = {
     processDocument,

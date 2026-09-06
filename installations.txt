@@ -9,3 +9,9 @@ npm install @huggingface/transformers
 
 
 npm install @google/genai
+
+ollama also installed
+npm install sharp // for the image extraction
+
+
+npm install pdf-to-img       // so that pdf converts to image in case of aadhar extraction

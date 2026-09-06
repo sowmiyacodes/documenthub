@@ -1,28 +1,35 @@
 /*
 |--------------------------------------------------------------------------
-| LifeHub AI - Entity Extraction Service
+| LifeHub AI - Generic Entity Extraction Service
 |--------------------------------------------------------------------------
 |
-| Extracts structured information from OCR text.
+| This service is intentionally NOT document-specific.
 |
-| This service intentionally uses deterministic rules / regex instead
-| of an LLM for sensitive identifiers such as Aadhaar and PAN numbers.
+| It extracts common entities from ANY document:
 |
-| Supported document types:
+| - Names
+| - Emails
+| - Phone numbers
+| - Dates
+| - Amounts
+| - Addresses
+| - URLs
+| - Aadhaar numbers
+| - PAN numbers
+| - Passport numbers
+| - GST numbers
+| - Account numbers
+| - Document numbers
+| - Organizations
 |
-| - Resume
-| - Aadhaar
-| - PAN
-| - Passport
-| - Driving License
-| - Marksheet
-| - Degree Certificate
-| - Medical
-| - Insurance
-| - Generic documents
+| It also detects a broad document type.
+|
+| Document-specific intelligence can be added later without changing
+| this generic extraction layer.
 |
 |--------------------------------------------------------------------------
 */
+
 
 /*
 |--------------------------------------------------------------------------
@@ -41,45 +48,65 @@ const cleanValue = (value) => {
         .trim();
 };
 
-const unique = (array) => {
-    return [
-        ...new Set(
-            array
-                .filter(Boolean)
-                .map((item) => cleanValue(item))
-                .filter(Boolean)
-        ),
-    ];
+
+const normalizeText = (text) => {
+    return text
+        .replace(/\r/g, "\n")
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
 };
+
+
+const unique = (array) => {
+    return [...new Set(
+        array.filter(
+            (value) =>
+                value !== null &&
+                value !== undefined &&
+                value !== ""
+        )
+    )];
+};
+
+
+const getLines = (text) => {
+    return normalizeText(text)
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+};
+
 
 /*
 |--------------------------------------------------------------------------
 | Document Type Detection
 |--------------------------------------------------------------------------
+|
+| This is broad classification.
+| It does NOT assume that the document is a resume.
+|--------------------------------------------------------------------------
 */
 
 const detectDocumentType = (text) => {
+
     const lower = text.toLowerCase();
 
     /*
     |--------------------------------------------------------------------------
-    | Aadhaar
+    | Identity Documents
     |--------------------------------------------------------------------------
     */
 
     if (
         lower.includes("aadhaar") ||
+        lower.includes("aadhar") ||
         lower.includes("uidai") ||
-        lower.includes("unique identification authority")
+        lower.includes("unique identification")
     ) {
         return "Aadhaar";
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | PAN
-    |--------------------------------------------------------------------------
-    */
 
     if (
         lower.includes("permanent account number") ||
@@ -89,25 +116,17 @@ const detectDocumentType = (text) => {
         return "PAN";
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Passport
-    |--------------------------------------------------------------------------
-    */
 
     if (
         lower.includes("passport") ||
-        lower.includes("republic of india") &&
-        lower.includes("nationality")
+        (
+            lower.includes("nationality") &&
+            lower.includes("date of birth")
+        )
     ) {
         return "Passport";
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Driving License
-    |--------------------------------------------------------------------------
-    */
 
     if (
         lower.includes("driving licence") ||
@@ -117,9 +136,21 @@ const detectDocumentType = (text) => {
         return "Driving License";
     }
 
+
+    if (
+        lower.includes("voter") &&
+        (
+            lower.includes("election") ||
+            lower.includes("elector")
+        )
+    ) {
+        return "Voter ID";
+    }
+
+
     /*
     |--------------------------------------------------------------------------
-    | Marksheet
+    | Education
     |--------------------------------------------------------------------------
     */
 
@@ -127,42 +158,102 @@ const detectDocumentType = (text) => {
         lower.includes("marksheet") ||
         lower.includes("mark sheet") ||
         lower.includes("grade card") ||
-        lower.includes("semester marks")
+        lower.includes("semester result") ||
+        lower.includes("academic transcript")
     ) {
         return "Marksheet";
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Degree Certificate
-    |--------------------------------------------------------------------------
-    */
 
     if (
         lower.includes("degree certificate") ||
-        lower.includes("degree") &&
-        lower.includes("university")
+        lower.includes("bachelor of technology") ||
+        lower.includes("bachelor of engineering") ||
+        lower.includes("master of technology") ||
+        lower.includes("master of engineering")
     ) {
         return "Degree Certificate";
     }
 
+
+    if (
+        lower.includes("certificate") &&
+        (
+            lower.includes("university") ||
+            lower.includes("college") ||
+            lower.includes("school")
+        )
+    ) {
+        return "Certificate";
+    }
+
+
     /*
     |--------------------------------------------------------------------------
-    | Resume / CV
+    | Financial Documents
     |--------------------------------------------------------------------------
     */
 
     if (
-        lower.includes("resume") ||
-        lower.includes("curriculum vitae") ||
-        lower.includes("professional summary") ||
-        lower.includes("work experience") ||
-        lower.includes("technical skills") ||
-        lower.includes("projects") &&
-        lower.includes("education")
+        lower.includes("bank statement") ||
+        (
+            lower.includes("account number") &&
+            lower.includes("transaction")
+        )
     ) {
-        return "Resume";
+        return "Bank Statement";
     }
+
+
+    if (
+        lower.includes("invoice") ||
+        lower.includes("tax invoice")
+    ) {
+        return "Invoice";
+    }
+
+
+    if (
+        lower.includes("receipt") ||
+        lower.includes("payment receipt")
+    ) {
+        return "Receipt";
+    }
+
+
+    if (
+        lower.includes("salary slip") ||
+        lower.includes("salary statement") ||
+        lower.includes("pay slip") ||
+        lower.includes("payslip")
+    ) {
+        return "Salary Slip";
+    }
+
+
+    if (
+        lower.includes("income tax") ||
+        lower.includes("tax return") ||
+        lower.includes("itr")
+    ) {
+        return "Tax Document";
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Insurance
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        lower.includes("insurance policy") ||
+        lower.includes("policy number") ||
+        lower.includes("insured")
+    ) {
+        return "Insurance";
+    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -172,30 +263,56 @@ const detectDocumentType = (text) => {
 
     if (
         lower.includes("hospital") ||
-        lower.includes("medical") ||
-        lower.includes("prescription") ||
         lower.includes("patient") ||
-        lower.includes("diagnosis")
+        lower.includes("diagnosis") ||
+        lower.includes("prescription") ||
+        lower.includes("medical report") ||
+        lower.includes("laboratory report")
     ) {
         return "Medical";
     }
 
+
     /*
     |--------------------------------------------------------------------------
-    | Insurance
+    | Legal
     |--------------------------------------------------------------------------
     */
 
     if (
-        lower.includes("insurance") ||
-        lower.includes("policy number") ||
-        lower.includes("premium")
+        lower.includes("agreement") ||
+        lower.includes("contract") ||
+        lower.includes("affidavit") ||
+        lower.includes("legal notice") ||
+        lower.includes("lease agreement") ||
+        lower.includes("court")
     ) {
-        return "Insurance";
+        return "Legal";
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resume / CV
+    |--------------------------------------------------------------------------
+    |
+    | Resume is only ONE possible document type.
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        lower.includes("curriculum vitae") ||
+        lower.includes("professional experience") ||
+        lower.includes("work experience") ||
+        lower.includes("technical skills")
+    ) {
+        return "Resume";
+    }
+
 
     return "Others";
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -204,51 +321,115 @@ const detectDocumentType = (text) => {
 */
 
 const extractEmails = (text) => {
+
+    const matches = text.match(
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}/g
+    );
+
     return unique(
-        text.match(
-            /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}/g
-        ) || []
+        matches || []
     );
 };
 
+
 /*
 |--------------------------------------------------------------------------
-| Indian Phone Number Extraction
+| Phone Number Extraction
 |--------------------------------------------------------------------------
 */
 
 const extractPhoneNumbers = (text) => {
+
+    const matches = text.match(
+        /(?:\+91[\s-]?)?[6-9]\d{9}\b/g
+    );
+
+    if (!matches) {
+        return [];
+    }
+
     return unique(
-        text.match(
-            /(?:\+91[\s-]?)?[6-9]\d{9}\b/g
-        ) || []
+        matches.map(
+            (phone) =>
+                phone
+                    .replace(/[^\d+]/g, "")
+                    .trim()
+        )
     );
 };
+
+
+/*
+|--------------------------------------------------------------------------
+| Date Extraction
+|--------------------------------------------------------------------------
+*/
+
+const extractDates = (text) => {
+
+    const matches = text.match(
+        /\b(?:\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{1,2}[\/\-][A-Za-z]{3,9}[\/\-]\d{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\b/gi
+    );
+
+    return unique(
+        matches || []
+    );
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Amount Extraction
+|--------------------------------------------------------------------------
+*/
+
+const extractAmounts = (text) => {
+
+    const matches = text.match(
+        /(?:₹|Rs\.?|INR)\s?[\d,]+(?:\.\d{1,2})?|\b\d[\d,]*(?:\.\d{1,2})?\s?(?:INR|USD|EUR|GBP)\b/gi
+    );
+
+    return unique(
+        matches || []
+    );
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| URL Extraction
+|--------------------------------------------------------------------------
+*/
+
+const extractUrls = (text) => {
+
+    const matches = text.match(
+        /https?:\/\/[^\s]+|www\.[^\s]+/gi
+    );
+
+    return unique(
+        matches || []
+    );
+};
+
 
 /*
 |--------------------------------------------------------------------------
 | Aadhaar Number
 |--------------------------------------------------------------------------
-|
-| Accepts:
-|
-| 1234 5678 9012
-| 123456789012
-|
-|--------------------------------------------------------------------------
 */
 
 const extractAadhaar = (text) => {
+
     const match = text.match(
-        /\b\d{4}\s?\d{4}\s?\d{4}\b/
+        /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/
     );
 
-    if (!match) {
-        return null;
-    }
-
-    return match[0].replace(/\s+/g, "");
+    return match
+        ? match[0].replace(/[\s-]/g, "")
+        : null;
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -257,6 +438,7 @@ const extractAadhaar = (text) => {
 */
 
 const extractPAN = (text) => {
+
     const match = text.match(
         /\b[A-Z]{5}[0-9]{4}[A-Z]\b/i
     );
@@ -266,13 +448,15 @@ const extractPAN = (text) => {
         : null;
 };
 
+
 /*
 |--------------------------------------------------------------------------
 | Passport Number
 |--------------------------------------------------------------------------
 */
 
-const extractPassportNumber = (text) => {
+const extractPassport = (text) => {
+
     const match = text.match(
         /\b[A-Z][0-9]{7}\b/i
     );
@@ -282,47 +466,208 @@ const extractPassportNumber = (text) => {
         : null;
 };
 
+
 /*
 |--------------------------------------------------------------------------
-| Date Extraction
+| GST Number
 |--------------------------------------------------------------------------
 */
 
-const extractDates = (text) => {
-    return unique(
-        text.match(
-            /\b(?:\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{2,4})\b/gi
-        ) || []
+const extractGST = (text) => {
+
+    const match = text.match(
+        /\b\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b/i
     );
+
+    return match
+        ? match[0].toUpperCase()
+        : null;
 };
 
+
 /*
 |--------------------------------------------------------------------------
-| Date Of Birth
+| Account Number
+|--------------------------------------------------------------------------
+|
+| We only extract when a clear account-number label exists.
+| This avoids treating random numbers as bank accounts.
 |--------------------------------------------------------------------------
 */
 
-const extractDateOfBirth = (text) => {
+const extractAccountNumbers = (text) => {
+
+    const matches = [];
 
     const patterns = [
-        /(?:date\s*of\s*birth|dob|birth\s*date)\s*[:\-]?\s*([0-9]{1,2}[\/\-][0-9]{1,2}[\/\-][0-9]{2,4})/i,
-
-        /(?:date\s*of\s*birth|dob|birth\s*date)\s*[:\-]?\s*([0-9]{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4})/i,
-
-        /(?:date\s*of\s*birth|dob|birth\s*date)\s*[:\-]?\s*([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{2,4})/i,
+        /(?:account number|account no\.?|a\/c number|a\/c no\.?)\s*[:\-]?\s*([0-9]{8,20})/gi
     ];
 
     for (const pattern of patterns) {
 
-        const match = text.match(pattern);
+        let match;
 
-        if (match && match[1]) {
-            return cleanValue(match[1]);
+        while ((match = pattern.exec(text)) !== null) {
+
+            if (match[1]) {
+                matches.push(match[1]);
+            }
         }
     }
 
-    return null;
+    return unique(matches);
 };
+
+
+/*
+|--------------------------------------------------------------------------
+| Generic Document / Reference Numbers
+|--------------------------------------------------------------------------
+*/
+
+const extractReferenceNumbers = (text) => {
+
+    const matches = [];
+
+    const patterns = [
+        /(?:document number|document no\.?|reference number|reference no\.?|ref no\.?|application number|application no\.?|registration number|registration no\.?)\s*[:\-]?\s*([A-Za-z0-9\/\-]+)/gi
+    ];
+
+    for (const pattern of patterns) {
+
+        let match;
+
+        while ((match = pattern.exec(text)) !== null) {
+
+            if (match[1]) {
+                matches.push(match[1]);
+            }
+        }
+    }
+
+    return unique(matches);
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Names
+|--------------------------------------------------------------------------
+|
+| Generic extraction.
+|
+| First preference:
+|   Name: XXXXX
+|
+| Then:
+|   Full Name: XXXXX
+|
+|--------------------------------------------------------------------------
+*/
+
+const extractNames = (text) => {
+
+    const names = [];
+
+    const patterns = [
+        /(?:^|\n)\s*(?:full\s+name|name|customer\s+name|applicant\s+name|patient\s+name|candidate\s+name)\s*[:\-]\s*([A-Za-z][A-Za-z .'-]{2,100})/gi,
+
+        /(?:^|\n)\s*(?:mr|mrs|ms|miss|dr)\.?\s+([A-Za-z][A-Za-z .'-]{2,80})/gi
+    ];
+
+    for (const pattern of patterns) {
+
+        let match;
+
+        while ((match = pattern.exec(text)) !== null) {
+
+            const value =
+                cleanValue(
+                    match[1]
+                );
+
+            if (value) {
+                names.push(value);
+            }
+        }
+    }
+
+    return unique(names);
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Organization Names
+|--------------------------------------------------------------------------
+*/
+
+const extractOrganizations = (text) => {
+
+    const organizations = [];
+
+    const patterns = [
+        /(?:organization|organisation|company|employer|institution|university|college|hospital)\s*[:\-]\s*([^\n]+)/gi
+    ];
+
+    for (const pattern of patterns) {
+
+        let match;
+
+        while ((match = pattern.exec(text)) !== null) {
+
+            const value =
+                cleanValue(match[1]);
+
+            if (
+                value &&
+                value.length >= 3 &&
+                value.length <= 150
+            ) {
+                organizations.push(value);
+            }
+        }
+    }
+
+    return unique(organizations);
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Addresses
+|--------------------------------------------------------------------------
+*/
+
+const extractAddresses = (text) => {
+
+    const addresses = [];
+
+    const patterns = [
+        /(?:address|permanent address|residential address|registered address)\s*[:\-]\s*([^\n]+)/gi
+    ];
+
+    for (const pattern of patterns) {
+
+        let match;
+
+        while ((match = pattern.exec(text)) !== null) {
+
+            const value =
+                cleanValue(match[1]);
+
+            if (
+                value &&
+                value.length >= 5
+            ) {
+                addresses.push(value);
+            }
+        }
+    }
+
+    return unique(addresses);
+};
+
 
 /*
 |--------------------------------------------------------------------------
@@ -333,389 +678,63 @@ const extractDateOfBirth = (text) => {
 const extractGender = (text) => {
 
     const match = text.match(
-        /(?:gender|sex)\s*[:\-]?\s*(male|female|other|m|f)\b/i
+        /(?:gender|sex)\s*[:\-]?\s*(male|female|m|f)\b/i
     );
 
     if (!match) {
         return null;
     }
 
-    const value = match[1].toLowerCase();
+    const value =
+        match[1].toLowerCase();
 
-    if (value === "m") {
+    if (
+        value === "male" ||
+        value === "m"
+    ) {
         return "Male";
     }
 
-    if (value === "f") {
+    if (
+        value === "female" ||
+        value === "f"
+    ) {
         return "Female";
     }
 
-    return (
-        value.charAt(0).toUpperCase() +
-        value.slice(1)
-    );
-};
-
-/*
-|--------------------------------------------------------------------------
-| Label Based Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractLabeledValue = (
-    text,
-    labels
-) => {
-
-    for (const label of labels) {
-
-        const escapedLabel =
-            label.replace(
-                /[.*+?^${}()|[\]\\]/g,
-                "\\$&"
-            );
-
-        const regex = new RegExp(
-            `${escapedLabel}\\s*[:\\-]?\\s*([^\\n|]{2,100})`,
-            "i"
-        );
-
-        const match = text.match(regex);
-
-        if (match && match[1]) {
-
-            const value =
-                cleanValue(match[1]);
-
-            if (value) {
-                return value;
-            }
-        }
-    }
-
     return null;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Name Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractName = (
-    text,
-    documentType
-) => {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Explicit name labels
-    |--------------------------------------------------------------------------
-    */
-
-    const labeledName =
-        extractLabeledValue(
-            text,
-            [
-                "name",
-                "full name",
-                "candidate name",
-                "student name",
-                "applicant name",
-                "holder name",
-                "given name",
-                "surname",
-            ]
-        );
-
-    if (
-        labeledName &&
-        labeledName.length <= 100
-    ) {
-
-        /*
-        Avoid accidentally accepting another field.
-        */
-
-        const invalidValues = [
-            "date of birth",
-            "dob",
-            "gender",
-            "male",
-            "female",
-            "address",
-            "email",
-            "phone",
-        ];
-
-        if (
-            !invalidValues.includes(
-                labeledName.toLowerCase()
-            )
-        ) {
-            return labeledName;
-        }
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Resume fallback
-    |--------------------------------------------------------------------------
-    |
-    | Usually the first meaningful line of a resume is the person's name.
-    |
-    */
-
-    if (documentType === "Resume") {
-
-        const lines = text
-            .split(/\r?\n/)
-            .map((line) =>
-                cleanValue(line)
-            )
-            .filter(Boolean);
-
-        for (const line of lines.slice(0, 10)) {
-
-            if (
-                line.length >= 3 &&
-                line.length <= 60 &&
-                /^[A-Za-z][A-Za-z .'-]+$/.test(line) &&
-                !line.toLowerCase().includes("resume") &&
-                !line.toLowerCase().includes("curriculum") &&
-                !line.toLowerCase().includes("engineer") &&
-                !line.toLowerCase().includes("developer")
-            ) {
-                return line;
-            }
-        }
-    }
-
-    return null;
-};
 
 /*
 |--------------------------------------------------------------------------
-| Address Extraction
+| Date of Birth
 |--------------------------------------------------------------------------
 */
 
-const extractAddress = (text) => {
-
-    const labels = [
-        "address",
-        "residential address",
-        "permanent address",
-        "current address",
-        "communication address",
-    ];
-
-    return extractLabeledValue(
-        text,
-        labels
-    );
-};
-
-/*
-|--------------------------------------------------------------------------
-| CGPA Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractCGPA = (text) => {
+const extractDateOfBirth = (text) => {
 
     const patterns = [
+        /(?:date\s+of\s+birth|dob|d\.o\.b)\s*[:\-]?\s*([0-9]{1,2}[\/\-][0-9]{1,2}[\/\-][0-9]{2,4})/i,
 
-        /*
-        CGPA: 9.95
-        CGPA - 9.95
-        */
+        /(?:date\s+of\s+birth|dob|d\.o\.b)\s*[:\-]?\s*([0-9]{1,2}[\/\-][A-Za-z]{3,9}[\/\-][0-9]{2,4})/i,
 
-        /\bCGPA\s*[:\-]?\s*(10(?:\.0)?|[0-9](?:\.[0-9]{1,2})?)/i,
-
-        /*
-        C.G.P.A. 9.95
-        */
-
-        /\bC\.?\s*G\.?\s*P\.?\s*A\.?\s*[:\-]?\s*(10(?:\.0)?|[0-9](?:\.[0-9]{1,2})?)/i,
-
-        /*
-        GPA: 9.95
-        */
-
-        /\bGPA\s*[:\-]?\s*(10(?:\.0)?|[0-9](?:\.[0-9]{1,2})?)/i,
+        /(?:date\s+of\s+birth|dob|d\.o\.b)\s*[:\-]?\s*([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})/i
     ];
 
     for (const pattern of patterns) {
-
-        const match =
-            text.match(pattern);
-
-        if (match && match[1]) {
-
-            const value =
-                parseFloat(match[1]);
-
-            if (
-                value >= 0 &&
-                value <= 10
-            ) {
-                return value;
-            }
-        }
-    }
-
-    return null;
-};
-
-/*
-|--------------------------------------------------------------------------
-| Degree Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractDegree = (text) => {
-
-    const degreePatterns = [
-
-        /\bB\.?\s*Tech\b[^\n,;]*/i,
-
-        /\bB\.?\s*E\b[^\n,;]*/i,
-
-        /\bM\.?\s*Tech\b[^\n,;]*/i,
-
-        /\bM\.?\s*E\b[^\n,;]*/i,
-
-        /\bB\.?\s*Sc\b[^\n,;]*/i,
-
-        /\bM\.?\s*Sc\b[^\n,;]*/i,
-
-        /\bBachelor\s+of\s+[^\n,;]+/i,
-
-        /\bMaster\s+of\s+[^\n,;]+/i,
-
-        /\bDoctor\s+of\s+Philosophy\b/i,
-    ];
-
-    for (const pattern of degreePatterns) {
 
         const match =
             text.match(pattern);
 
         if (match) {
-
-            return cleanValue(
-                match[0]
-            );
+            return cleanValue(match[1]);
         }
     }
 
     return null;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Branch / Specialization
-|--------------------------------------------------------------------------
-*/
-
-const extractSpecialization = (text) => {
-
-    const patterns = [
-
-        /(?:specialization|specialisation|branch|major)\s*[:\-]?\s*([^\n|]{2,100})/i,
-
-        /\b(?:B\.?\s*Tech|B\.?\s*E|M\.?\s*Tech|M\.?\s*E)\s+(?:in|-)\s+([^\n,;|]+)/i,
-    ];
-
-    for (const pattern of patterns) {
-
-        const match =
-            text.match(pattern);
-
-        if (match && match[1]) {
-
-            return cleanValue(
-                match[1]
-            );
-        }
-    }
-
-    return null;
-};
-
-/*
-|--------------------------------------------------------------------------
-| College / University
-|--------------------------------------------------------------------------
-*/
-
-const extractInstitution = (text) => {
-
-    const value =
-        extractLabeledValue(
-            text,
-            [
-                "college",
-                "university",
-                "institution",
-                "school",
-            ]
-        );
-
-    if (value) {
-        return value;
-    }
-
-    /*
-    Common Indian university/college wording
-    */
-
-    const patterns = [
-
-        /(?:studying|studied|pursuing)[^.\n]{0,50}(?:at|from)\s+([A-Za-z0-9 .,&'-]{3,100})/i,
-
-        /\b([A-Za-z0-9 .,&'-]+University)\b/i,
-
-        /\b([A-Za-z0-9 .,&'-]+College)\b/i,
-    ];
-
-    for (const pattern of patterns) {
-
-        const match =
-            text.match(pattern);
-
-        if (
-            match &&
-            match[1]
-        ) {
-            return cleanValue(
-                match[1]
-            );
-        }
-    }
-
-    return null;
-};
-
-/*
-|--------------------------------------------------------------------------
-| Father's Name
-|--------------------------------------------------------------------------
-*/
-
-const extractFatherName = (text) => {
-
-    return extractLabeledValue(
-        text,
-        [
-            "father's name",
-            "father name",
-            "fathers name",
-            "father",
-        ]
-    );
-};
 
 /*
 |--------------------------------------------------------------------------
@@ -725,352 +744,97 @@ const extractFatherName = (text) => {
 
 const extractNationality = (text) => {
 
-    return extractLabeledValue(
-        text,
-        [
-            "nationality",
-        ]
+    const match = text.match(
+        /nationality\s*[:\-]?\s*([A-Za-z ]+)/i
     );
+
+    return match
+        ? cleanValue(match[1])
+        : null;
 };
+
 
 /*
 |--------------------------------------------------------------------------
-| Passport Dates
+| Generic Label-Value Extraction
+|--------------------------------------------------------------------------
+|
+| This is important for ANY unknown document.
+|
+| Example:
+|
+| Policy Number: ABC123
+| Invoice Number: INV001
+| Course: Information Technology
+| Blood Group: O+
+| Department: IT
+|
+| The system doesn't need to know the document type beforehand.
 |--------------------------------------------------------------------------
 */
 
-const extractIssueDate = (text) => {
+const extractLabeledFields = (text) => {
 
-    return extractLabeledValue(
-        text,
-        [
-            "date of issue",
-            "issue date",
-            "issued on",
-        ]
-    );
-};
+    const fields = {};
 
-const extractExpiryDate = (text) => {
+    const lines =
+        getLines(text);
 
-    return extractLabeledValue(
-        text,
-        [
-            "date of expiry",
-            "expiry date",
-            "expires on",
-            "valid until",
-        ]
-    );
-};
+    for (const line of lines) {
 
-/*
-|--------------------------------------------------------------------------
-| Skills Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractSkills = (text) => {
-
-    const skillSectionMatch =
-        text.match(
-            /(?:technical skills|skills|technologies|technical expertise)\s*[:\-]?\s*([\s\S]{0,1000})/i
-        );
-
-    if (!skillSectionMatch) {
-        return [];
-    }
-
-    const section =
-        skillSectionMatch[1];
-
-    const knownSkills = [
-        "Java",
-        "JavaScript",
-        "Python",
-        "C",
-        "C++",
-        "React",
-        "React.js",
-        "Node.js",
-        "Express",
-        "MongoDB",
-        "PostgreSQL",
-        "MySQL",
-        "Supabase",
-        "Firebase",
-        "Next.js",
-        "Vite",
-        "HTML",
-        "CSS",
-        "Tailwind CSS",
-        "Machine Learning",
-        "Deep Learning",
-        "TensorFlow",
-        "PyTorch",
-        "OpenCV",
-        "Git",
-        "GitHub",
-        "Docker",
-        "AWS",
-        "Azure",
-        "GCP",
-        "SQL",
-        "NoSQL",
-        "REST API",
-        "MERN",
-        "LangChain",
-        "LlamaIndex",
-    ];
-
-    const foundSkills = [];
-
-    for (const skill of knownSkills) {
-
-        const regex =
-            new RegExp(
-                `\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
-                "i"
+        const match =
+            line.match(
+                /^([A-Za-z][A-Za-z0-9 /()._-]{1,50})\s*[:\-]\s*(.+)$/
             );
 
-        if (regex.test(section)) {
-            foundSkills.push(skill);
+        if (!match) {
+            continue;
+        }
+
+        const key =
+            cleanValue(match[1]);
+
+        const value =
+            cleanValue(match[2]);
+
+        if (
+            !key ||
+            !value
+        ) {
+            continue;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Avoid extremely large values
+        |--------------------------------------------------------------------------
+        */
+
+        if (value.length > 300) {
+            continue;
+        }
+
+        const normalizedKey =
+            key
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "_")
+                .replace(/^_+|_+$/g, "");
+
+        if (
+            normalizedKey &&
+            !fields[normalizedKey]
+        ) {
+            fields[normalizedKey] = value;
         }
     }
 
-    return unique(foundSkills);
+    return fields;
 };
+
 
 /*
 |--------------------------------------------------------------------------
-| Resume Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractResumeEntities = (text) => {
-
-    return {
-        name: extractName(
-            text,
-            "Resume"
-        ),
-
-        email:
-            extractEmails(text)[0] ||
-            null,
-
-        phone:
-            extractPhoneNumbers(text)[0] ||
-            null,
-
-        degree:
-            extractDegree(text),
-
-        specialization:
-            extractSpecialization(text),
-
-        institution:
-            extractInstitution(text),
-
-        cgpa:
-            extractCGPA(text),
-
-        skills:
-            extractSkills(text),
-
-        dates:
-            extractDates(text),
-    };
-};
-
-/*
-|--------------------------------------------------------------------------
-| Aadhaar Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractAadhaarEntities = (text) => {
-
-    return {
-        name:
-            extractName(
-                text,
-                "Aadhaar"
-            ),
-
-        dateOfBirth:
-            extractDateOfBirth(text),
-
-        gender:
-            extractGender(text),
-
-        aadhaarNumber:
-            extractAadhaar(text),
-
-        address:
-            extractAddress(text),
-    };
-};
-
-/*
-|--------------------------------------------------------------------------
-| PAN Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractPANEntities = (text) => {
-
-    return {
-        name:
-            extractName(
-                text,
-                "PAN"
-            ),
-
-        fatherName:
-            extractFatherName(text),
-
-        dateOfBirth:
-            extractDateOfBirth(text),
-
-        panNumber:
-            extractPAN(text),
-    };
-};
-
-/*
-|--------------------------------------------------------------------------
-| Passport Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractPassportEntities = (text) => {
-
-    return {
-        name:
-            extractName(
-                text,
-                "Passport"
-            ),
-
-        passportNumber:
-            extractPassportNumber(text),
-
-        dateOfBirth:
-            extractDateOfBirth(text),
-
-        gender:
-            extractGender(text),
-
-        nationality:
-            extractNationality(text),
-
-        issueDate:
-            extractIssueDate(text),
-
-        expiryDate:
-            extractExpiryDate(text),
-
-        address:
-            extractAddress(text),
-    };
-};
-
-/*
-|--------------------------------------------------------------------------
-| Driving License
-|--------------------------------------------------------------------------
-*/
-
-const extractDrivingLicenseEntities = (text) => {
-
-    return {
-        name:
-            extractName(
-                text,
-                "Driving License"
-            ),
-
-        dateOfBirth:
-            extractDateOfBirth(text),
-
-        address:
-            extractAddress(text),
-
-        dates:
-            extractDates(text),
-    };
-};
-
-/*
-|--------------------------------------------------------------------------
-| Marksheet / Education
-|--------------------------------------------------------------------------
-*/
-
-const extractEducationEntities = (
-    text,
-    documentType
-) => {
-
-    return {
-        name:
-            extractName(
-                text,
-                documentType
-            ),
-
-        degree:
-            extractDegree(text),
-
-        specialization:
-            extractSpecialization(text),
-
-        institution:
-            extractInstitution(text),
-
-        cgpa:
-            extractCGPA(text),
-
-        dates:
-            extractDates(text),
-    };
-};
-
-/*
-|--------------------------------------------------------------------------
-| Generic Extraction
-|--------------------------------------------------------------------------
-*/
-
-const extractGenericEntities = (text) => {
-
-    return {
-        names: [],
-
-        emails:
-            extractEmails(text),
-
-        phoneNumbers:
-            extractPhoneNumbers(text),
-
-        dates:
-            extractDates(text),
-
-        aadhaar:
-            extractAadhaar(text),
-
-        pan:
-            extractPAN(text),
-
-        passport:
-            extractPassportNumber(text),
-    };
-};
-
-/*
-|--------------------------------------------------------------------------
-| Main Entity Extraction
+| Main Generic Entity Extraction
 |--------------------------------------------------------------------------
 */
 
@@ -1082,83 +846,192 @@ const extractEntities = async (text) => {
     ) {
         return {
             documentType: "Others",
-            fields: {},
+            entities: {}
         };
     }
 
+
+    const normalizedText =
+        normalizeText(text);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detect broad document type
+    |--------------------------------------------------------------------------
+    */
+
     const documentType =
-        detectDocumentType(text);
+        detectDocumentType(
+            normalizedText
+        );
 
-    let fields = {};
 
-    switch (documentType) {
+    /*
+    |--------------------------------------------------------------------------
+    | Extract generic entities
+    |--------------------------------------------------------------------------
+    */
 
-        case "Resume":
+    const entities = {
 
-            fields =
-                extractResumeEntities(text);
+        names:
+            extractNames(
+                normalizedText
+            ),
 
-            break;
+        emails:
+            extractEmails(
+                normalizedText
+            ),
 
-        case "Aadhaar":
+        phoneNumbers:
+            extractPhoneNumbers(
+                normalizedText
+            ),
 
-            fields =
-                extractAadhaarEntities(text);
+        dates:
+            extractDates(
+                normalizedText
+            ),
 
-            break;
+        amounts:
+            extractAmounts(
+                normalizedText
+            ),
 
-        case "PAN":
+        addresses:
+            extractAddresses(
+                normalizedText
+            ),
 
-            fields =
-                extractPANEntities(text);
+        urls:
+            extractUrls(
+                normalizedText
+            ),
 
-            break;
+        organizations:
+            extractOrganizations(
+                normalizedText
+            ),
 
-        case "Passport":
+        aadhaarNumber:
+            extractAadhaar(
+                normalizedText
+            ),
 
-            fields =
-                extractPassportEntities(text);
+        panNumber:
+            extractPAN(
+                normalizedText
+            ),
 
-            break;
+        passportNumber:
+            extractPassport(
+                normalizedText
+            ),
 
-        case "Driving License":
+        gstNumber:
+            extractGST(
+                normalizedText
+            ),
 
-            fields =
-                extractDrivingLicenseEntities(text);
+        accountNumbers:
+            extractAccountNumbers(
+                normalizedText
+            ),
 
-            break;
+        referenceNumbers:
+            extractReferenceNumbers(
+                normalizedText
+            ),
 
-        case "Marksheet":
+        gender:
+            extractGender(
+                normalizedText
+            ),
 
-        case "Degree Certificate":
+        dateOfBirth:
+            extractDateOfBirth(
+                normalizedText
+            ),
 
-            fields =
-                extractEducationEntities(
-                    text,
-                    documentType
-                );
+        nationality:
+            extractNationality(
+                normalizedText
+            ),
 
-            break;
+        labeledFields:
+            extractLabeledFields(
+                normalizedText
+            )
+    };
 
-        default:
 
-            fields =
-                extractGenericEntities(text);
+    /*
+    |--------------------------------------------------------------------------
+    | Remove empty values
+    |--------------------------------------------------------------------------
+    */
+
+    const cleanedEntities = {};
+
+    for (
+        const [key, value]
+        of Object.entries(entities)
+    ) {
+
+        if (Array.isArray(value)) {
+
+            if (value.length > 0) {
+                cleanedEntities[key] =
+                    value;
+            }
+
+        } else if (
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Do not store empty labeled fields
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                typeof value === "object" &&
+                Object.keys(value).length === 0
+            ) {
+                continue;
+            }
+
+            cleanedEntities[key] =
+                value;
+        }
     }
 
+
     return {
+
         documentType,
-        fields,
+
+        entities:
+            cleanedEntities
     };
 };
 
+
 /*
 |--------------------------------------------------------------------------
-| Export
+| Exports
 |--------------------------------------------------------------------------
 */
 
 module.exports = {
+
     extractEntities,
-    detectDocumentType,
+
+    detectDocumentType
+
 };
