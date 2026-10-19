@@ -1,5 +1,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import {
   Box,
   Typography,
@@ -61,18 +62,21 @@ export default function AssistantPage() {
 
   const bottomRef = useRef(null);
   const requestRef = useRef(0);
+  const sendingRef = useRef(false);
 
   const refreshConversations = useCallback(async () => {
     const response = await getConversations();
     setConversations(response.conversations || []);
   }, []);
 
+  // Load conversation history on page mount.
   useEffect(() => {
     let cancelled = false;
 
     const loadHistory = async () => {
       try {
         setHistoryLoading(true);
+
         const response = await getConversations();
 
         if (cancelled) return;
@@ -80,7 +84,6 @@ export default function AssistantPage() {
         const items = response.conversations || [];
         setConversations(items);
 
-        // Show the most recent chat automatically.
         if (items.length > 0) {
           setActiveId(items[0].id);
         }
@@ -92,7 +95,9 @@ export default function AssistantPage() {
           );
         }
       } finally {
-        if (!cancelled) setHistoryLoading(false);
+        if (!cancelled) {
+          setHistoryLoading(false);
+        }
       }
     };
 
@@ -104,9 +109,11 @@ export default function AssistantPage() {
     };
   }, []);
 
+  // Load messages whenever the selected conversation changes.
   useEffect(() => {
     if (!activeId) {
       setMessages([]);
+      setMessagesLoading(false);
       return;
     }
 
@@ -130,6 +137,7 @@ export default function AssistantPage() {
           err.response?.data?.message ||
             "Unable to load this conversation."
         );
+
         setMessages([]);
       } finally {
         if (!cancelled && requestId === requestRef.current) {
@@ -145,6 +153,7 @@ export default function AssistantPage() {
     };
   }, [activeId]);
 
+  // Keep the latest message in view.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -153,15 +162,17 @@ export default function AssistantPage() {
   }, [messages, sending]);
 
   const handleNewChat = () => {
-    // Start a clean conversation. A database record is created
-    // when the user sends their first message.
+    if (sendingRef.current) return;
+
     requestRef.current += 1;
     setActiveId(null);
     setMessages([]);
     setError("");
+    setMessagesLoading(false);
   };
 
   const handleSelectChat = (id) => {
+    if (sendingRef.current) return;
     if (String(id) === String(activeId)) return;
 
     requestRef.current += 1;
@@ -171,29 +182,37 @@ export default function AssistantPage() {
   };
 
   const handleSend = async (question) => {
-    if (sending) return;
+    const cleanQuestion = question?.trim();
 
+    if (!cleanQuestion || sendingRef.current) return;
+
+    sendingRef.current = true;
     setSending(true);
     setError("");
 
     let conversationId = activeId;
     const temporaryId = `temp-${Date.now()}`;
 
-    // Optimistically display the user's message.
+    // Show the user's question immediately.
     setMessages((previous) => [
       ...previous,
       {
         id: temporaryId,
         role: "user",
-        content: question,
+        content: cleanQuestion,
         sources: [],
+        failed: false,
       },
     ]);
 
     try {
       if (!conversationId) {
         const created = await createConversation();
-        conversationId = created.conversation.id;
+        conversationId = created?.conversation?.id;
+
+        if (!conversationId) {
+          throw new Error("The new conversation ID was not returned.");
+        }
 
         setActiveId(conversationId);
         await refreshConversations();
@@ -201,10 +220,13 @@ export default function AssistantPage() {
 
       const response = await sendChatMessage(
         conversationId,
-        question
+        cleanQuestion
       );
 
-      // Use the saved messages returned by the backend.
+      if (!response?.userMessage || !response?.assistantMessage) {
+        throw new Error("The server returned an incomplete chat response.");
+      }
+
       setMessages((previous) => {
         const withoutTemporary = previous.filter(
           (message) => message.id !== temporaryId
@@ -219,15 +241,35 @@ export default function AssistantPage() {
 
       await refreshConversations();
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to send your message. Please try again."
+      setMessages((previous) =>
+        previous.map((message) =>
+          message.id === temporaryId
+            ? { ...message, failed: true }
+            : message
+        )
       );
 
-      // Keep the user's message visible so it can be retried.
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Unable to send your message. Please try again."
+      );
     } finally {
+      sendingRef.current = false;
       setSending(false);
     }
+  };
+
+  const handleRetry = async (message) => {
+    if (sendingRef.current || !message?.content) return;
+
+    // Remove the failed optimistic message before resending it.
+    setMessages((previous) =>
+      previous.filter((item) => item.id !== message.id)
+    );
+
+    setError("");
+    await handleSend(message.content);
   };
 
   const handleRename = async (id, title) => {
@@ -236,17 +278,24 @@ export default function AssistantPage() {
 
       setConversations((previous) =>
         previous.map((chat) =>
-          chat.id === id ? response.conversation : chat
+          String(chat.id) === String(id)
+            ? response.conversation
+            : chat
         )
       );
+
+      setError("");
     } catch (err) {
       setError(
-        err.response?.data?.message || "Unable to rename this chat."
+        err.response?.data?.message ||
+          "Unable to rename this chat."
       );
     }
   };
 
   const handleDelete = async (id) => {
+    if (sendingRef.current) return;
+
     if (!window.confirm("Delete this conversation permanently?")) {
       return;
     }
@@ -254,17 +303,22 @@ export default function AssistantPage() {
     try {
       await deleteConversation(id);
 
-      const remaining = conversations.filter((chat) => chat.id !== id);
+      const remaining = conversations.filter(
+        (chat) => String(chat.id) !== String(id)
+      );
+
       setConversations(remaining);
 
       if (String(activeId) === String(id)) {
         requestRef.current += 1;
         setActiveId(null);
         setMessages([]);
+        setError("");
       }
     } catch (err) {
       setError(
-        err.response?.data?.message || "Unable to delete this chat."
+        err.response?.data?.message ||
+          "Unable to delete this chat."
       );
     }
   };
@@ -274,13 +328,18 @@ export default function AssistantPage() {
       const response = await viewDocument(documentId);
 
       if (response.url) {
-        window.open(response.url, "_blank", "noopener,noreferrer");
+        window.open(
+          response.url,
+          "_blank",
+          "noopener,noreferrer"
+        );
       } else {
         setError("The document link could not be generated.");
       }
     } catch (err) {
       setError(
-        err.response?.data?.message || "Unable to open this document."
+        err.response?.data?.message ||
+          "Unable to open this document."
       );
     }
   };
@@ -328,6 +387,7 @@ export default function AssistantPage() {
           height: "100%",
         }}
       >
+        {/* Header */}
         <Box
           sx={{
             px: { xs: 1.5, md: 3 },
@@ -353,6 +413,7 @@ export default function AssistantPage() {
               <Typography fontWeight={800} color="#0F172A">
                 AI Assistant
               </Typography>
+
               <Typography variant="caption" color="text.secondary">
                 Your personal document intelligence
               </Typography>
@@ -362,6 +423,7 @@ export default function AssistantPage() {
           <Button
             startIcon={<AddRoundedIcon />}
             onClick={handleNewChat}
+            disabled={sending}
             sx={{
               display: { xs: "inline-flex", md: "none" },
               textTransform: "none",
@@ -371,6 +433,7 @@ export default function AssistantPage() {
           </Button>
         </Box>
 
+        {/* Chat area */}
         <Box
           sx={{
             flex: 1,
@@ -446,6 +509,7 @@ export default function AssistantPage() {
                   <Button
                     key={item.title}
                     variant="outlined"
+                    disabled={sending}
                     onClick={() => handleSend(item.prompt)}
                     sx={{
                       p: 2,
@@ -467,6 +531,7 @@ export default function AssistantPage() {
                       <Typography fontWeight={700} mb={0.5}>
                         {item.title}
                       </Typography>
+
                       <Typography
                         variant="body2"
                         color="text.secondary"
@@ -486,12 +551,18 @@ export default function AssistantPage() {
                   key={message.id || `${message.role}-${index}`}
                   message={message}
                   onOpenDocument={handleOpenDocument}
+                  onRetry={
+                    message.failed && message.role === "user"
+                      ? () => handleRetry(message)
+                      : undefined
+                  }
                 />
               ))}
 
               {sending && (
                 <Box display="flex" alignItems="center" gap={1.5} mb={3}>
                   <CircularProgress size={24} />
+
                   <Typography color="text.secondary" variant="body2">
                     LifeHub AI is thinking...
                   </Typography>
@@ -504,6 +575,7 @@ export default function AssistantPage() {
 
           {error && (
             <Box
+              role="alert"
               sx={{
                 maxWidth: 850,
                 mx: "auto",
@@ -519,6 +591,7 @@ export default function AssistantPage() {
           )}
         </Box>
 
+        {/* Message input */}
         <Box
           sx={{
             px: { xs: 1.5, md: 3 },
@@ -527,7 +600,11 @@ export default function AssistantPage() {
             borderTop: "1px solid #F1F5F9",
           }}
         >
-          <ChatInput onSend={handleSend} loading={sending} />
+          <ChatInput
+            onSend={handleSend}
+            loading={sending}
+            disabled={messagesLoading}
+          />
         </Box>
       </Box>
     </Box>
