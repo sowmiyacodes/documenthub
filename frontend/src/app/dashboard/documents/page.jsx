@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
+import { semanticSearch } from "@/services/search";
+import SemanticSearchResults from "@/components/documents/SemanticSearchResults";
 import {
   Box,
   Typography,
@@ -51,7 +52,10 @@ export default function DocumentsPage() {
   const [sortBy, setSortBy] = useState("newest");
 
   const [viewMode, setViewMode] = useState("grid");
-
+  const [semanticResults, setSemanticResults] = useState([]);
+  const [semanticLoading, setSemanticLoading] = useState(false);
+  const [semanticError, setSemanticError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] =
     useState(false);
 
@@ -154,6 +158,42 @@ export default function DocumentsPage() {
     category,
     sortBy,
   ]);
+
+  const handleSemanticSearch = async () => {
+  const query = search.trim();
+
+  if (!query) {
+    setHasSearched(false);
+    setSemanticResults([]);
+    setSemanticError("");
+    return;
+  }
+
+  setSemanticLoading(true);
+  setSemanticError("");
+  setHasSearched(true);
+
+  try {
+    const response = await semanticSearch(query);
+
+    if (!response.success) {
+      throw new Error("Semantic search failed.");
+    }
+
+    setSemanticResults(response.results || []);
+  } catch (error) {
+    console.error("Semantic search error:", error);
+
+    setSemanticResults([]);
+    setSemanticError(
+      error.response?.data?.message ||
+      error.message ||
+      "Unable to search documents. Please try again."
+    );
+  } finally {
+    setSemanticLoading(false);
+  }
+};
   return (
   <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#f8fafc", minHeight: "100vh" }}>
 
@@ -242,13 +282,33 @@ export default function DocumentsPage() {
             fullWidth
             placeholder="Search documents..."
             value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
+           onChange={(e) => {
+            setSearch(e.target.value);
+            setHasSearched(false);
+            setSemanticResults([]);
+            setSemanticError("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSemanticSearch();
             }
+          }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <Search />
+                </InputAdornment>
+                
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <Button
+                    onClick={handleSemanticSearch}
+                    disabled={semanticLoading || !search.trim()}
+                    sx={{ textTransform: "none" }}
+                  >
+                    {semanticLoading ? "Searching…" : "AI Search"}
+                  </Button>
                 </InputAdornment>
               ),
             }}
@@ -369,7 +429,40 @@ export default function DocumentsPage() {
 
       </Grid>
     </Paper>
+    {hasSearched && (
+  <Box sx={{ mb: 4 }}>
+    <Typography variant="h6" fontWeight={700} mb={2}>
+      Semantic Search Results
+    </Typography>
 
+    {semanticLoading && (
+      <Box display="flex" justifyContent="center" py={4}>
+        <CircularProgress />
+      </Box>
+    )}
+
+    {!semanticLoading && semanticError && (
+      <Typography color="error" sx={{ py: 2 }}>
+        {semanticError}
+      </Typography>
+    )}
+
+    {!semanticLoading && !semanticError && (
+      <>
+        <Typography color="text.secondary" mb={2}>
+          {semanticResults.length} matching text chunks found
+        </Typography>
+
+        <SemanticSearchResults
+          results={semanticResults}
+          documents={documents}
+          onView={handleView}
+          query={search}
+        />
+      </>
+    )}
+  </Box>
+)}
     {/* ================= LOADING ================= */}
 
     {loading && (
@@ -385,6 +478,7 @@ export default function DocumentsPage() {
     {/* ================= EMPTY ================= */}
 
     {!loading &&
+      !hasSearched &&
       filteredDocuments.length === 0 && (
 
         <Card

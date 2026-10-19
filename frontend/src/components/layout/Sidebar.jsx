@@ -1,3 +1,4 @@
+
 import {
   Drawer,
   Toolbar,
@@ -11,7 +12,6 @@ import {
   Divider,
   Button,
   LinearProgress,
-  Chip,
 } from "@mui/material";
 
 import {
@@ -43,8 +43,7 @@ const menu = [
   {
     text: "AI Assistant",
     icon: <Psychology />,
-    path: "#",
-    disabled: true,
+    path: "/dashboard/assistant",
   },
   {
     text: "Reminders",
@@ -68,6 +67,21 @@ export default function Sidebar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
+  };
+
+  const isActive = (item) => {
+    if (item.disabled) return false;
+
+    // Exact match for Dashboard so its active state
+    // does not remain selected on nested pages.
+    if (item.path === "/dashboard") {
+      return location.pathname === "/dashboard";
+    }
+
+    return (
+      location.pathname === item.path ||
+      location.pathname.startsWith(`${item.path}/`)
+    );
   };
 
   return (
@@ -124,49 +138,59 @@ export default function Sidebar() {
 
         <List sx={{ mt: 2 }}>
           {menu.map((item) => {
-            const active =
-              item.path !== "#" &&
-              location.pathname.startsWith(item.path);
+            const active = isActive(item);
 
             return (
               <ListItemButton
                 key={item.text}
                 disabled={item.disabled}
-                onClick={() =>
-                  !item.disabled && navigate(item.path)
-                }
+                selected={active}
+                onClick={() => {
+                  if (!item.disabled) {
+                    navigate(item.path);
+                  }
+                }}
                 sx={{
                   mb: 1,
                   borderRadius: 3,
+                  minHeight: 52,
 
                   bgcolor: active ? "#2563EB" : "transparent",
-
                   color: active ? "#fff" : "#334155",
 
+                  "& .MuiListItemIcon-root": {
+                    color: active ? "#fff" : "#64748B",
+                    minWidth: 40,
+                  },
+
+                  "&.Mui-selected": {
+                    bgcolor: "#2563EB",
+                    color: "#fff",
+                  },
+
+                  "&.Mui-selected .MuiListItemIcon-root": {
+                    color: "#fff",
+                  },
+
                   "&:hover": {
-                    bgcolor: active
-                      ? "#1D4ED8"
-                      : "#EEF2FF",
+                    bgcolor: active ? "#1D4ED8" : "#EEF2FF",
+                  },
+
+                  "&.Mui-selected:hover": {
+                    bgcolor: "#1D4ED8",
                   },
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    color: active ? "#fff" : "#64748B",
-                  }}
-                >
+                <ListItemIcon>
                   {item.icon}
                 </ListItemIcon>
 
-                <ListItemText primary={item.text} />
-
-                {item.disabled && (
-                  <Chip
-                    size="small"
-                    label="Soon"
-                    color="default"
-                  />
-                )}
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontWeight: active ? 600 : 400,
+                  }}
+                />
               </ListItemButton>
             );
           })}
@@ -191,6 +215,7 @@ export default function Sidebar() {
             mb={2}
           >
             <Storage />
+
             <Typography fontWeight={600}>
               Cloud Storage
             </Typography>

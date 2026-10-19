@@ -1,0 +1,819 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R 12 0 R 14 0 R] /Count 5 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Length 4177 >>
+stream
+1 1 1 rg
+0 0 595.28 841.89 re f
+0.075 0.145 0.255 rg
+0 0 595.28 841.89 re f
+0.09 0.19 0.32 rg
+0 0 595.28 300 re f
+0.055 0.57 0.56 rg
+0 0 8 841.89 re f
+0.57 0.84 0.87 rg
+BT /F2 10 Tf 1 0 0 1 48 786 Tm (DOCUMENTHUB) Tj ET
+0.66 0.78 0.93 rg
+BT /F2 13 Tf 1 0 0 1 48 696 Tm (PROJECT STATUS) Tj ET
+1 1 1 rg
+BT /F2 38 Tf 1 0 0 1 48 650 Tm (Report) Tj ET
+1 1 1 rg
+BT /F1 16 Tf 1 0 0 1 48 610 Tm (Modules, features and architecture) Tj ET
+0.78 0.84 0.91 rg
+BT /F1 10.5 Tf 1 0 0 1 48 581 Tm (Implementation inventory and next-stage feature plan) Tj ET
+0.3 0.4 0.53 RG
+0.8 w
+48 550 m 547.28 550 l S
+0.65 0.75 0.87 rg
+BT /F2 7.5 Tf 1 0 0 1 48 522 Tm (STATUS DATE) Tj ET
+1 1 1 rg
+BT /F2 11 Tf 1 0 0 1 48 504 Tm (15 October 2026) Tj ET
+0.65 0.75 0.87 rg
+BT /F2 7.5 Tf 1 0 0 1 330 522 Tm (ASSESSMENT BASIS) Tj ET
+1 1 1 rg
+BT /F2 11 Tf 1 0 0 1 330 504 Tm (Repository source review) Tj ET
+1 1 1 rg
+38 74 519.28 380 re f
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 58 423 Tm (EXECUTIVE SUMMARY) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 10 Tf 1 0 0 1 58 400 Tm (DocumentHub has a substantial end-to-end implementation foundation: account access, document) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 10 Tf 1 0 0 1 58 385 Tm (upload and management, automated text extraction and enrichment, stored summaries, vector-based) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 10 Tf 1 0 0 1 58 370 Tm (retrieval, and document-focused AI question answering are represented in the codebase and) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 10 Tf 1 0 0 1 58 355 Tm (connected through the application routes.) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+58 315 112 60 re B
+0.145 0.365 0.745 rg
+BT /F2 7 Tf 1 0 0 1 68 354 Tm (FRONTEND) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 9 Tf 1 0 0 1 68 334 Tm (React + Vite) Tj ET
+0.89 0.97 0.96 rg
+0.87 0.9 0.93 RG
+0.75 w
+178 315 112 60 re B
+0.145 0.365 0.745 rg
+BT /F2 7 Tf 1 0 0 1 188 354 Tm (BACKEND) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 9 Tf 1 0 0 1 188 334 Tm (Express APIs) Tj ET
+1 0.96 0.87 rg
+0.87 0.9 0.93 RG
+0.75 w
+298 315 112 60 re B
+0.145 0.365 0.745 rg
+BT /F2 7 Tf 1 0 0 1 308 354 Tm (AI / RAG) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 9 Tf 1 0 0 1 308 334 Tm (OCR + retrieval) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+418 315 112 60 re B
+0.145 0.365 0.745 rg
+BT /F2 7 Tf 1 0 0 1 428 354 Tm (DATA) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 9 Tf 1 0 0 1 428 334 Tm (Supabase) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 58 286 Tm (COMPLETION ASSESSMENT) Tj ET
+0.055 0.57 0.56 rg
+60 269 2 2 re f
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 267 Tm (Core backend workflows are implemented in source, including authenticated document CRUD and background AI) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 255 Tm (processing.) Tj ET
+0.055 0.57 0.56 rg
+60 245 2 2 re f
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 243 Tm (The document library connects to upload, view/delete, summaries and document-scoped AI Q&A; search/filter/sort) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 231 Tm (and grid/table views are present.) Tj ET
+0.055 0.57 0.56 rg
+60 221 2 2 re f
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 219 Tm (The dashboard is still a presentation shell: its displayed counts are hard-coded placeholders, and AI is labeled) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 207 Tm (Preview / Coming Soon.) Tj ET
+0.055 0.57 0.56 rg
+60 197 2 2 re f
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 195 Tm (The code calls Supabase tables, Storage and vector RPC functions, but database migrations and RPC definitions) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.5 Tf 1 0 0 1 69 183 Tm (are not included in this repository.) Tj ET
+1 0.96 0.87 rg
+58 100 479.28 55 re f
+0.55 0.37 0.1 rg
+BT /F2 7 Tf 1 0 0 1 72 136 Tm (HOW TO READ THIS REPORT) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8 Tf 1 0 0 1 72 120 Tm (-Implemented- means evidenced in source code. It does not certify a live deployment, configured Supabase schema,) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8 Tf 1 0 0 1 72 109 Tm (successful end-to-end run, or production readiness.) Tj ET
+0.87 0.9 0.93 RG
+0.7 w
+38 35 m 557.28 35 l S
+0.38 0.44 0.52 rg
+BT /F1 7.5 Tf 1 0 0 1 38 21 Tm (Repository-based implementation inventory | 15 October 2026) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 544.28 21 Tm (01) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 4695 >>
+stream
+1 1 1 rg
+0 0 595.28 841.89 re f
+0.075 0.145 0.255 rg
+0 807.89 595.28 34 re f
+1 1 1 rg
+BT /F2 8 Tf 1 0 0 1 38 819.89 Tm (DOCUMENTHUB  /  PROJECT STATUS) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 22 Tf 1 0 0 1 38 773.89 Tm (Modules and contents) Tj ET
+0.87 0.9 0.93 RG
+0.8 w
+38 759.89 m 557.28 759.89 l S
+0.38 0.44 0.52 rg
+BT /F1 9 Tf 1 0 0 1 38 739.89 Tm (A module-by-module view of the current implementation scope.) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 597.89 519.28 116 re B
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 53 690.89 Tm (01  Frontend application) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.5 w
+458.68 683.89 83.6 15 re B
+0.1 0.48 0.36 rg
+BT /F2 7 Tf 1 0 0 1 465.68 693.89 Tm (Core screens present) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 669.89 Tm (React 19 + Vite single-page app with React Router and Material UI. Includes landing/auth dialogs, dashboard shell,) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 658.39 Tm (document library, upload form, grid/table views, category and name filters, sorting, and AI Summary / Ask AI dialogs. The) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 646.89 Tm (dashboard metrics and recent-document panel remain placeholders.) Tj ET
+0.89 0.97 0.96 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 470.89 519.28 116 re B
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 53 563.89 Tm (02  Backend API and access control) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.5 w
+455.25 556.89 87.03 15 re B
+0.1 0.48 0.36 rg
+BT /F2 7 Tf 1 0 0 1 462.25 566.89 Tm (Implemented in source) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 542.89 Tm (Express API groups authentication, document and AI endpoints. Registration hashes passwords with bcrypt; login issues a) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 531.39 Tm (24-hour JWT. Middleware protects document and AI routes, and document queries are scoped to the signed-in user.) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 343.89 519.28 116 re B
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 53 436.89 Tm (03  Document ingestion and enrichment) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.5 w
+455.25 429.89 87.03 15 re B
+0.1 0.48 0.36 rg
+BT /F2 7 Tf 1 0 0 1 462.25 439.89 Tm (Implemented in source) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 415.89 Tm (Uploads are accepted for PDF, PNG and JPEG \(up to 50 MB in the upload middleware\), stored in Supabase Storage, and) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 404.39 Tm (processed asynchronously. Processing extracts text, metadata and entities, predicts a category, generates a summary, and) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 392.89 Tm (updates processing fields.) Tj ET
+0.89 0.97 0.96 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 216.89 519.28 116 re B
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 53 309.89 Tm (04  RAG and AI services) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.5 w
+410.66 302.89 131.62 15 re B
+0.1 0.48 0.36 rg
+BT /F2 7 Tf 1 0 0 1 417.66 312.89 Tm (Implemented; runtime config needed) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 288.89 Tm (OCR handles embedded-text PDFs and scanned PDF pages, plus preprocessed image OCR. Embeddings use) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 277.39 Tm (Xenova/all-MiniLM-L6-v2. Text is chunked at 1,000 characters with 200-character overlap. RAG retrieves up to five chunks) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 265.89 Tm (for document Q&A; semantic search retrieves up to ten matches. Ollama is the preferred answer provider with Gemini) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 254.39 Tm (fallback.) Tj ET
+1 0.96 0.87 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 89.89 519.28 116 re B
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 53 182.89 Tm (05  Database and file storage) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.5 w
+431.24 175.89 111.04 15 re B
+0.1 0.48 0.36 rg
+BT /F2 7 Tf 1 0 0 1 438.24 185.89 Tm (Supabase integration present) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 161.89 Tm (The backend uses Supabase for users/documents records, a documents Storage bucket, and document_chunks plus) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 150.39 Tm (insert_document_chunk / match_document_chunks RPC calls for vector writes and retrieval. The repository does not contain) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8.2 Tf 1 0 0 1 53 138.89 Tm (SQL migrations or the RPC definitions, so schema deployment cannot be verified from source alone.) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.5 Tf 1 0 0 1 38 71 Tm (Technology references reflect package manifests and active source imports.) Tj ET
+0.87 0.9 0.93 RG
+0.7 w
+38 35 m 557.28 35 l S
+0.38 0.44 0.52 rg
+BT /F1 7.5 Tf 1 0 0 1 38 21 Tm (Repository-based implementation inventory | 15 October 2026) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 544.28 21 Tm (02) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 5648 >>
+stream
+1 1 1 rg
+0 0 595.28 841.89 re f
+0.075 0.145 0.255 rg
+0 807.89 595.28 34 re f
+1 1 1 rg
+BT /F2 8 Tf 1 0 0 1 38 819.89 Tm (DOCUMENTHUB  /  PROJECT STATUS) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 22 Tf 1 0 0 1 38 773.89 Tm (Features included) Tj ET
+0.87 0.9 0.93 RG
+0.8 w
+38 759.89 m 557.28 759.89 l S
+0.38 0.44 0.52 rg
+BT /F1 9 Tf 1 0 0 1 38 739.89 Tm (User-facing workflows and AI capabilities currently evidenced in the codebase.) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 562.89 251 144 re B
+0.145 0.365 0.745 rg
+38 678.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 51 657.89 Tm (Account registration and login) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 639.89 Tm (Create an account and sign in with email/password.) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 628.89 Tm (Passwords are hashed with bcrypt; successful login returns) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 617.89 Tm (a JWT used by protected API requests.) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+306 562.89 251 144 re B
+0.145 0.365 0.745 rg
+306 678.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 319 657.89 Tm (Personal document vault) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 639.89 Tm (Upload supported files, view them through a time-limited) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 628.89 Tm (signed URL, list and delete owned documents, and persist) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 617.89 Tm (document metadata in Supabase.) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 405.89 251 144 re B
+0.145 0.365 0.745 rg
+38 521.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 51 500.89 Tm (Document organization) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 482.89 Tm (Store category and optional description. The library) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 471.89 Tm (provides name/category filtering, sort choices, and) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 460.89 Tm (grid/table display modes.) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+306 405.89 251 144 re B
+0.145 0.365 0.745 rg
+306 521.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 319 500.89 Tm (PDF and image text extraction) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 482.89 Tm (Extract embedded PDF text; when a PDF is scanned, render) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 471.89 Tm (pages and run OCR. Images are preprocessed with rotation,) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 460.89 Tm (resize, grayscale, normalization and sharpening before) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 449.89 Tm (Tesseract.) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 248.89 251 144 re B
+0.055 0.57 0.56 rg
+38 364.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 51 343.89 Tm (Metadata and category enrichment) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 325.89 Tm (Extract document type, people, dates, email/phone and) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 314.89 Tm (supported identifiers using rules and entity parsing;) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 303.89 Tm (classify into Identity, Education, Medical, Financial,) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 292.89 Tm (Legal or Others.) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+306 248.89 251 144 re B
+0.055 0.57 0.56 rg
+306 364.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 319 343.89 Tm (Automatic document summaries) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 325.89 Tm (Generate a concise summary using the configured local) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 314.89 Tm (Ollama model \(default Gemma 3 4B\), with a lightweight) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 303.89 Tm (extractive fallback if local generation fails.) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 91.89 251 144 re B
+0.055 0.57 0.56 rg
+38 207.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 51 186.89 Tm (Document-scoped AI Q&A) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 168.89 Tm (Ask questions about a selected document. Retrieval) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 157.89 Tm (combines stored summary/metadata and the most relevant) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 146.89 Tm (chunks; the answer service uses Ollama first and Gemini as) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 51 135.89 Tm (fallback and returns source references.) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+306 91.89 251 144 re B
+0.055 0.57 0.56 rg
+306 207.89 28 3 re f
+0.075 0.145 0.255 rg
+BT /F2 9.2 Tf 1 0 0 1 319 186.89 Tm (Semantic search endpoint) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 168.89 Tm (The authenticated backend embeds a query and searches the) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 157.89 Tm (user's document chunks. A frontend service wrapper exists;) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 146.89 Tm (a global semantic-search screen is not wired into the) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.8 Tf 1 0 0 1 319 135.89 Tm (reviewed document-library page.) Tj ET
+1 0.96 0.87 rg
+38 75 519.28 48 re f
+0.55 0.37 0.1 rg
+BT /F2 7 Tf 1 0 0 1 52 104 Tm (STATUS NOTE) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 7.5 Tf 1 0 0 1 52 89 Tm (Processing status fields and UI badges exist; confirm background workers, credentials, database functions and model availability in) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 7.5 Tf 1 0 0 1 52 79 Tm (the deployment environment.) Tj ET
+0.87 0.9 0.93 RG
+0.7 w
+38 35 m 557.28 35 l S
+0.38 0.44 0.52 rg
+BT /F1 7.5 Tf 1 0 0 1 38 21 Tm (Repository-based implementation inventory | 15 October 2026) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 544.28 21 Tm (03) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Length 7028 >>
+stream
+1 1 1 rg
+0 0 595.28 841.89 re f
+0.075 0.145 0.255 rg
+0 807.89 595.28 34 re f
+1 1 1 rg
+BT /F2 8 Tf 1 0 0 1 38 819.89 Tm (DOCUMENTHUB  /  PROJECT STATUS) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 22 Tf 1 0 0 1 38 773.89 Tm (System architecture) Tj ET
+0.87 0.9 0.93 RG
+0.8 w
+38 759.89 m 557.28 759.89 l S
+0.38 0.44 0.52 rg
+BT /F1 9 Tf 1 0 0 1 38 739.89 Tm (Implemented request paths and persistence boundaries \(logical view\).) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 38 706 Tm (APPLICATION AND PERSISTENCE) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+40 620 145 65 re B
+0.145 0.365 0.745 rg
+40 620 4 65 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 52 666 Tm (Web client) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 52 651 Tm (React / Vite; dashboard, library,) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 52 641 Tm (upload, summary and Ask AI) Tj ET
+0.89 0.97 0.96 rg
+0.87 0.9 0.93 RG
+0.75 w
+225 620 145 65 re B
+0.055 0.57 0.56 rg
+225 620 4 65 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 237 666 Tm (Express API) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 237 651 Tm (JWT middleware; /auth, /documents) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 237 641 Tm (and /ai routes) Tj ET
+1 0.96 0.87 rg
+0.87 0.9 0.93 RG
+0.75 w
+410 620 145 65 re B
+0.75 0.49 0.13 rg
+410 620 4 65 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 422 666 Tm (Supabase) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 422 651 Tm (Postgres records, Storage bucket) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 422 641 Tm (and vector RPC) Tj ET
+0.145 0.365 0.745 RG
+1.4 w
+185 652 m 225 652 l S
+0.145 0.365 0.745 RG
+1.4 w
+225 652 m 219.934 655.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+225 652 m 219.934 648.785 l S
+0.145 0.365 0.745 RG
+1.4 w
+370 652 m 410 652 l S
+0.145 0.365 0.745 RG
+1.4 w
+410 652 m 404.934 655.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+410 652 m 404.934 648.785 l S
+0.38 0.44 0.52 rg
+BT /F1 6.5 Tf 1 0 0 1 190 662 Tm (HTTPS + JWT) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 6.5 Tf 1 0 0 1 376 662 Tm (DB / Storage) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 38 586 Tm (UPLOAD PROCESSING PATH) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+40 493 114 66 re B
+0.145 0.365 0.745 rg
+40 493 4 66 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 52 540 Tm (Upload) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 52 525 Tm (PDF / PNG / JPEG) Tj ET
+0.89 0.97 0.96 rg
+0.87 0.9 0.93 RG
+0.75 w
+172 493 114 66 re B
+0.055 0.57 0.56 rg
+172 493 4 66 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 184 540 Tm (Extract text) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 184 525 Tm (PDF parser; scanned-page) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 184 515 Tm (OCR; image OCR) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+304 493 114 66 re B
+0.145 0.365 0.745 rg
+304 493 4 66 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 316 540 Tm (Enrich) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 316 525 Tm (Metadata, entities,) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 316 515 Tm (category and summary) Tj ET
+1 0.96 0.87 rg
+0.87 0.9 0.93 RG
+0.75 w
+436 493 119 66 re B
+0.75 0.49 0.13 rg
+436 493 4 66 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 448 540 Tm (Embed + store) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 448 525 Tm (1,000-char chunks; 200) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 448 515 Tm (overlap; Supabase RPC) Tj ET
+0.145 0.365 0.745 RG
+1.4 w
+154 526 m 172 526 l S
+0.145 0.365 0.745 RG
+1.4 w
+172 526 m 166.934 529.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+172 526 m 166.934 522.785 l S
+0.145 0.365 0.745 RG
+1.4 w
+286 526 m 304 526 l S
+0.145 0.365 0.745 RG
+1.4 w
+304 526 m 298.934 529.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+304 526 m 298.934 522.785 l S
+0.145 0.365 0.745 RG
+1.4 w
+418 526 m 436 526 l S
+0.145 0.365 0.745 RG
+1.4 w
+436 526 m 430.934 529.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+436 526 m 430.934 522.785 l S
+0.75 0.49 0.13 RG
+1.2 w
+497 493 m 497 466 l S
+0.75 0.49 0.13 RG
+1.2 w
+497 466 m 500.215 471.066 l S
+0.75 0.49 0.13 RG
+1.2 w
+497 466 m 493.785 471.066 l S
+1 0.96 0.87 rg
+0.87 0.9 0.93 RG
+0.75 w
+410 410 145 48 re B
+0.75 0.49 0.13 rg
+410 410 4 48 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 422 439 Tm (Supabase database) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 422 424 Tm (documents + document_chunks) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 38 378 Tm (SEMANTIC SEARCH AND RAG QUESTION ANSWERING) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+40 282 113 67 re B
+0.145 0.365 0.745 rg
+40 282 4 67 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 52 330 Tm (Ask / Search) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 52 315 Tm (Question or semantic) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 52 305 Tm (query) Tj ET
+0.89 0.97 0.96 rg
+0.87 0.9 0.93 RG
+0.75 w
+171 282 113 67 re B
+0.055 0.57 0.56 rg
+171 282 4 67 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 183 330 Tm (RAG service) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 183 315 Tm (Embed query; retrieve) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 183 305 Tm (user's relevant chunks) Tj ET
+0.91 0.95 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+302 282 113 67 re B
+0.145 0.365 0.745 rg
+302 282 4 67 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 314 330 Tm (Answer model) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 314 315 Tm (Ollama first; Gemini) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 314 305 Tm (fallback for answers) Tj ET
+0.89 0.97 0.96 rg
+0.87 0.9 0.93 RG
+0.75 w
+433 282 122 67 re B
+0.055 0.57 0.56 rg
+433 282 4 67 re f
+0.075 0.145 0.255 rg
+BT /F2 9.5 Tf 1 0 0 1 445 330 Tm (Response) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 445 315 Tm (Answer and source) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 7.3 Tf 1 0 0 1 445 305 Tm (references returned to UI) Tj ET
+0.145 0.365 0.745 RG
+1.4 w
+153 315 m 171 315 l S
+0.145 0.365 0.745 RG
+1.4 w
+171 315 m 165.934 318.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+171 315 m 165.934 311.785 l S
+0.145 0.365 0.745 RG
+1.4 w
+284 315 m 302 315 l S
+0.145 0.365 0.745 RG
+1.4 w
+302 315 m 296.934 318.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+302 315 m 296.934 311.785 l S
+0.145 0.365 0.745 RG
+1.4 w
+415 315 m 433 315 l S
+0.145 0.365 0.745 RG
+1.4 w
+433 315 m 427.934 318.215 l S
+0.145 0.365 0.745 RG
+1.4 w
+433 315 m 427.934 311.785 l S
+0.75 0.49 0.13 RG
+1 w
+228 349 m 478 410 l S
+0.75 0.49 0.13 RG
+1 w
+478 410 m 472.316 411.922 l S
+0.75 0.49 0.13 RG
+1 w
+478 410 m 473.841 405.676 l S
+0.38 0.44 0.52 rg
+BT /F1 6.3 Tf 1 0 0 1 301 376 Tm (match_document_chunks\(\)) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.7 w
+40 201 515.28 47 re B
+0.145 0.365 0.745 rg
+BT /F2 7 Tf 1 0 0 1 54 229 Tm (CONFIGURATION BOUNDARY) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 7.4 Tf 1 0 0 1 54 214 Tm (Supabase SQL/RPC definitions, environment secrets, Storage policies, model runtimes and deployment settings are external configuration) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 7.4 Tf 1 0 0 1 54 204 Tm (and are not verifiable from the repository snapshot.) Tj ET
+0.87 0.9 0.93 RG
+0.7 w
+38 35 m 557.28 35 l S
+0.38 0.44 0.52 rg
+BT /F1 7.5 Tf 1 0 0 1 38 21 Tm (Repository-based implementation inventory | 15 October 2026) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 544.28 21 Tm (04) Tj ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 11 0 R >>
+endobj
+13 0 obj
+<< /Length 3642 >>
+stream
+1 1 1 rg
+0 0 595.28 841.89 re f
+0.075 0.145 0.255 rg
+0 807.89 595.28 34 re f
+1 1 1 rg
+BT /F2 8 Tf 1 0 0 1 38 819.89 Tm (DOCUMENTHUB  /  PROJECT STATUS) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 22 Tf 1 0 0 1 38 773.89 Tm (Next-stage feature plan) Tj ET
+0.87 0.9 0.93 RG
+0.8 w
+38 759.89 m 557.28 759.89 l S
+0.38 0.44 0.52 rg
+BT /F1 9 Tf 1 0 0 1 38 739.89 Tm (Proposed product features for the next development stage.) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 587.89 519.28 109 re B
+0.145 0.365 0.745 rg
+52 652.89 32 26 re f
+1 1 1 rg
+BT /F2 9 Tf 1 0 0 1 63.59 661.89 Tm (01) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 99 668.89 Tm (Live dashboard insights) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 647.89 Tm (Replace placeholder counters with live document totals, storage usage, category distribution and a) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 635.89 Tm (recent-activity feed so users can understand their vault at a glance.) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 466.89 519.28 109 re B
+0.145 0.365 0.745 rg
+52 531.89 32 26 re f
+1 1 1 rg
+BT /F2 9 Tf 1 0 0 1 63.59 540.89 Tm (02) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 99 547.89 Tm (Whole-library semantic search) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 526.89 Tm (Add a dedicated search experience across all of a user's documents, showing matched passages, document) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 514.89 Tm (names and direct links to the source files.) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 345.89 519.28 109 re B
+0.055 0.57 0.56 rg
+52 410.89 32 26 re f
+1 1 1 rg
+BT /F2 9 Tf 1 0 0 1 63.59 419.89 Tm (03) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 99 426.89 Tm (Expiry and due-date reminders) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 405.89 Tm (Let users review extracted dates, mark important expiry dates and receive configurable reminders for) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 393.89 Tm (time-sensitive identity, insurance and financial documents.) Tj ET
+1 1 1 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 224.89 519.28 109 re B
+0.145 0.365 0.745 rg
+52 289.89 32 26 re f
+1 1 1 rg
+BT /F2 9 Tf 1 0 0 1 63.59 298.89 Tm (04) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 99 305.89 Tm (Secure document sharing) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 284.89 Tm (Allow a user to create, manage and revoke controlled sharing links, with configurable expiry and read-only) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 272.89 Tm (access for selected documents.) Tj ET
+0.95 0.97 0.99 rg
+0.87 0.9 0.93 RG
+0.75 w
+38 103.89 519.28 109 re B
+0.145 0.365 0.745 rg
+52 168.89 32 26 re f
+1 1 1 rg
+BT /F2 9 Tf 1 0 0 1 63.59 177.89 Tm (05) Tj ET
+0.075 0.145 0.255 rg
+BT /F2 11 Tf 1 0 0 1 99 184.89 Tm (Review and export AI results) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 163.89 Tm (Provide a user review screen for extracted metadata and categories, plus export of a document's summary and) Tj ET
+0.38 0.44 0.52 rg
+BT /F1 8.4 Tf 1 0 0 1 99 151.89 Tm (structured fields for offline reference.) Tj ET
+0.89 0.97 0.96 rg
+38 76 519.28 50 re f
+0.055 0.57 0.56 rg
+BT /F2 7 Tf 1 0 0 1 53 105 Tm (DELIVERABLE INTENT) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8 Tf 1 0 0 1 53 90 Tm (These are proposed user-facing capabilities, not claims about current implementation. Prioritize based on user feedback and) Tj ET
+0.13 0.18 0.25 rg
+BT /F1 8 Tf 1 0 0 1 53 79 Tm (available time.) Tj ET
+0.87 0.9 0.93 RG
+0.7 w
+38 35 m 557.28 35 l S
+0.38 0.44 0.52 rg
+BT /F1 7.5 Tf 1 0 0 1 38 21 Tm (Repository-based implementation inventory | 15 October 2026) Tj ET
+0.145 0.365 0.745 rg
+BT /F2 8 Tf 1 0 0 1 544.28 21 Tm (05) Tj ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 13 0 R >>
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000142 00000 n 
+0000000212 00000 n 
+0000000287 00000 n 
+0000004516 00000 n 
+0000004658 00000 n 
+0000009405 00000 n 
+0000009547 00000 n 
+0000015247 00000 n 
+0000015390 00000 n 
+0000022471 00000 n 
+0000022615 00000 n 
+0000026310 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R >>
+startxref
+26454
+%%EOF

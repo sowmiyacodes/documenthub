@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 
@@ -10,52 +11,66 @@ const {
     getStatus,
 } = require("../controllers/aiController");
 
-/*
-====================================================
-AI CHAT (RAG)
-POST /api/ai/chat
-====================================================
-*/
-router.post(
-    "/chat",
-    authenticateUser,
-    askQuestion
-);
+const {
+    createConversation,
+    listConversations,
+    getMessages,
+    sendMessage,
+    renameConversation,
+    deleteConversation,
+} = require("../controllers/conversationController");
 
-/*
-====================================================
-SEMANTIC SEARCH
-POST /api/ai/search
-====================================================
-*/
-router.post(
-    "/search",
-    authenticateUser,
-    semanticSearch
-);
+// Existing AI endpoints
+router.post("/chat", authenticateUser, askQuestion);
+router.post("/search", authenticateUser, semanticSearch);
 
-/*
-====================================================
-GET DOCUMENT SUMMARY
-GET /api/ai/document/:id/summary
-====================================================
-*/
 router.get(
     "/document/:id/summary",
     authenticateUser,
     getSummary
 );
 
-/*
-====================================================
-GET PROCESSING STATUS
-GET /api/ai/document/:id/status
-====================================================
-*/
 router.get(
     "/document/:id/status",
     authenticateUser,
     getStatus
+);
+
+// Persistent chat history
+router.post(
+    "/conversations",
+    authenticateUser,
+    createConversation
+);
+
+router.get(
+    "/conversations",
+    authenticateUser,
+    listConversations
+);
+
+router.get(
+    "/conversations/:id/messages",
+    authenticateUser,
+    getMessages
+);
+
+router.post(
+    "/conversations/:id/messages",
+    authenticateUser,
+    sendMessage
+);
+
+router.patch(
+    "/conversations/:id",
+    authenticateUser,
+    renameConversation
+);
+
+router.delete(
+    "/conversations/:id",
+    authenticateUser,
+    deleteConversation
 );
 
 module.exports = router;

@@ -1,14 +1,23 @@
+
 import api from "./api";
 
 /*
 =========================================
-Ask AI
+Document AI
 =========================================
 */
 
 export const askAI = async ({ question, documentId }) => {
-    const response = await api.post("/ai/chat", {
+    const response = await api.post("/ai/ask", {
         question,
+        documentId,
+    });
+
+    return response.data;
+};
+
+export const getSummary = async (documentId) => {
+    const response = await api.post("/ai/summary", {
         documentId,
     });
 
@@ -17,42 +26,46 @@ export const askAI = async ({ question, documentId }) => {
 
 /*
 =========================================
-Semantic Search
+Persistent Chat History
 =========================================
 */
 
-export const semanticSearch = async (query) => {
-    const response = await api.post("/ai/search", {
-        query,
-    });
-
+export const createConversation = async () => {
+    const response = await api.post("/ai/conversations", {});
     return response.data;
 };
 
-/*
-=========================================
-Document Summary
-=========================================
-*/
-
-export const getSummary = async (documentId) => {
-    const response = await api.get(
-        `/ai/document/${documentId}/summary`
-    );
-
+export const getConversations = async () => {
+    const response = await api.get("/ai/conversations");
     return response.data;
 };
 
-/*
-=========================================
-Processing Status
-=========================================
-*/
-
-export const getStatus = async (documentId) => {
+export const getConversationMessages = async (conversationId) => {
     const response = await api.get(
-        `/ai/document/${documentId}/status`
+        `/ai/conversations/${conversationId}/messages`
     );
+    return response.data;
+};
 
+export const sendChatMessage = async (conversationId, question) => {
+    const response = await api.post(
+        `/ai/conversations/${conversationId}/messages`,
+        { question }
+    );
+    return response.data;
+};
+
+export const renameConversation = async (conversationId, title) => {
+    const response = await api.patch(
+        `/ai/conversations/${conversationId}`,
+        { title }
+    );
+    return response.data;
+};
+
+export const deleteConversation = async (conversationId) => {
+    const response = await api.delete(
+        `/ai/conversations/${conversationId}`
+    );
     return response.data;
 };
