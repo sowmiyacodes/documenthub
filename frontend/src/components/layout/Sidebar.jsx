@@ -1,19 +1,11 @@
-
 import {
-  Drawer,
-  Toolbar,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
   Box,
+  Typography,
   Avatar,
-  Divider,
   Button,
   LinearProgress,
+  Tooltip,
 } from "@mui/material";
-
 import {
   Dashboard,
   Description,
@@ -23,37 +15,36 @@ import {
   Logout,
   Storage,
   AutoAwesome,
+  ArrowForward,
 } from "@mui/icons-material";
-
 import { useLocation, useNavigate } from "react-router-dom";
-
-const drawerWidth = 280;
 
 const menu = [
   {
-    text: "Dashboard",
-    icon: <Dashboard />,
+    text: "Overview",
+    icon: <Dashboard sx={{ fontSize: 19 }} />,
     path: "/dashboard",
   },
   {
-    text: "Documents",
-    icon: <Description />,
+    text: "My documents",
+    icon: <Description sx={{ fontSize: 19 }} />,
     path: "/dashboard/documents",
   },
   {
-    text: "AI Assistant",
-    icon: <Psychology />,
+    text: "AI workspace",
+    icon: <Psychology sx={{ fontSize: 19 }} />,
     path: "/dashboard/assistant",
+    badge: "AI",
   },
   {
     text: "Reminders",
-    icon: <Notifications />,
+    icon: <Notifications sx={{ fontSize: 19 }} />,
     path: "#",
     disabled: true,
   },
   {
     text: "Settings",
-    icon: <Settings />,
+    icon: <Settings sx={{ fontSize: 19 }} />,
     path: "#",
     disabled: true,
   },
@@ -62,6 +53,11 @@ const menu = [
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const user =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("user") || "{}")
+      : {};
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -72,8 +68,6 @@ export default function Sidebar() {
   const isActive = (item) => {
     if (item.disabled) return false;
 
-    // Exact match for Dashboard so its active state
-    // does not remain selected on nested pages.
     if (item.path === "/dashboard") {
       return location.pathname === "/dashboard";
     }
@@ -85,197 +79,109 @@ export default function Sidebar() {
   };
 
   return (
-    <Drawer
-      variant="permanent"
+    <Box
+      component="aside"
+      className="workspace-sidebar"
       sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-          boxSizing: "border-box",
-          borderRight: "1px solid #E5E7EB",
-          background: "#FAFBFC",
-        },
+        width: 270,
+        flex: "0 0 270px",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "#ffffff",
+        borderRight: "1px solid #dce6f2",
       }}
     >
-      <Toolbar sx={{ py: 2 }}>
-        <Avatar
-          sx={{
-            bgcolor: "#2563EB",
-            width: 54,
-            height: 54,
-            mr: 2,
-          }}
-        >
-          <AutoAwesome />
-        </Avatar>
-
+      <Box className="workspace-brand">
+        <Box className="workspace-brand-mark"><AutoAwesome sx={{ fontSize: 21 }} /></Box>
         <Box>
-          <Typography fontWeight={700} fontSize={20}>
-            LifeHub AI
+          <Typography className="workspace-brand-name">
+            document<span>hub</span>
           </Typography>
-
-          <Typography color="text.secondary" fontSize={13}>
-            Personal Workspace
-          </Typography>
+          <Typography className="workspace-brand-caption">YOUR PERSONAL ARCHIVE</Typography>
         </Box>
-      </Toolbar>
-
-      <Divider />
-
-      <Box sx={{ p: 3 }}>
-        <Typography
-          variant="caption"
-          sx={{
-            color: "#94A3B8",
-            fontWeight: 700,
-            letterSpacing: 2,
-          }}
-        >
-          WORKSPACE
-        </Typography>
-
-        <List sx={{ mt: 2 }}>
-          {menu.map((item) => {
-            const active = isActive(item);
-
-            return (
-              <ListItemButton
-                key={item.text}
-                disabled={item.disabled}
-                selected={active}
-                onClick={() => {
-                  if (!item.disabled) {
-                    navigate(item.path);
-                  }
-                }}
-                sx={{
-                  mb: 1,
-                  borderRadius: 3,
-                  minHeight: 52,
-
-                  bgcolor: active ? "#2563EB" : "transparent",
-                  color: active ? "#fff" : "#334155",
-
-                  "& .MuiListItemIcon-root": {
-                    color: active ? "#fff" : "#64748B",
-                    minWidth: 40,
-                  },
-
-                  "&.Mui-selected": {
-                    bgcolor: "#2563EB",
-                    color: "#fff",
-                  },
-
-                  "&.Mui-selected .MuiListItemIcon-root": {
-                    color: "#fff",
-                  },
-
-                  "&:hover": {
-                    bgcolor: active ? "#1D4ED8" : "#EEF2FF",
-                  },
-
-                  "&.Mui-selected:hover": {
-                    bgcolor: "#1D4ED8",
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  {item.icon}
-                </ListItemIcon>
-
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontWeight: active ? 600 : 400,
-                  }}
-                />
-              </ListItemButton>
-            );
-          })}
-        </List>
       </Box>
 
-      <Box sx={{ flexGrow: 1 }} />
-
-      <Box sx={{ p: 2 }}>
-        <Box
-          sx={{
-            bgcolor: "#2563EB",
-            color: "white",
-            p: 2.5,
-            borderRadius: 3,
-          }}
-        >
-          <Box
-            display="flex"
-            alignItems="center"
-            gap={1}
-            mb={2}
-          >
-            <Storage />
-
-            <Typography fontWeight={600}>
-              Cloud Storage
-            </Typography>
-          </Box>
-
-          <Typography variant="body2">
-            0 MB of 2 GB Used
-          </Typography>
-
-          <LinearProgress
-            variant="determinate"
-            value={5}
-            sx={{
-              mt: 2,
-              height: 8,
-              borderRadius: 5,
-              bgcolor: "rgba(255,255,255,.25)",
-
-              "& .MuiLinearProgress-bar": {
-                backgroundColor: "#fff",
-              },
-            }}
-          />
+      <Box className="workspace-switcher">
+        <Box className="workspace-switcher-icon"><Storage sx={{ fontSize: 17 }} /></Box>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography className="workspace-switcher-label">CURRENT SPACE</Typography>
+          <Typography className="workspace-switcher-value">My workspace</Typography>
         </Box>
+        <span className="workspace-switcher-dot" />
+      </Box>
 
-        <Divider sx={{ my: 3 }} />
+      <Box className="workspace-nav">
+        <Typography className="workspace-nav-caption">YOUR SPACE</Typography>
+        {menu.map((item) => {
+          const active = isActive(item);
+          return (
+            <Tooltip key={item.text} title={item.disabled ? "Coming soon" : ""} placement="right">
+              <span>
+                <button
+                  type="button"
+                  disabled={item.disabled}
+                  aria-current={active ? "page" : undefined}
+                  className={`workspace-nav-item${active ? " is-active" : ""}`}
+                  onClick={() => {
+                    if (!item.disabled) navigate(item.path);
+                  }}
+                >
+                  <span className="workspace-nav-icon">{item.icon}</span>
+                  <span className="workspace-nav-text">{item.text}</span>
+                  {item.badge && <span className="workspace-nav-badge">{item.badge}</span>}
+                  {active && <span className="workspace-nav-active-mark" />}
+                </button>
+              </span>
+            </Tooltip>
+          );
+        })}
+      </Box>
 
-        <Box display="flex" alignItems="center" gap={2} mb={2}>
-          <Avatar sx={{ bgcolor: "#2563EB" }}>S</Avatar>
+      <Box className="workspace-sidebar-spacer" />
 
-          <Box>
-            <Typography fontWeight={600}>
-              Welcome
-            </Typography>
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-            >
-              LifeHub User
-            </Typography>
-          </Box>
-        </Box>
-
+      <Box className="workspace-ai-promo">
+        <span className="workspace-ai-promo-icon"><AutoAwesome sx={{ fontSize: 17 }} /></span>
+        <Typography className="workspace-ai-promo-title">Your files have answers.</Typography>
+        <Typography className="workspace-ai-promo-copy">
+          Ask across your archive and get answers linked to their sources.
+        </Typography>
         <Button
-          fullWidth
-          color="error"
-          variant="outlined"
-          startIcon={<Logout />}
-          onClick={logout}
-          sx={{
-            borderRadius: 3,
-            py: 1.3,
-            textTransform: "none",
-            fontWeight: 600,
-          }}
+          onClick={() => navigate("/dashboard/assistant")}
+          endIcon={<ArrowForward sx={{ fontSize: 15 }} />}
+          className="workspace-ai-promo-link"
         >
-          Logout
+          Ask your documents
         </Button>
       </Box>
-    </Drawer>
+
+      <Box className="workspace-storage">
+        <Box className="workspace-storage-heading">
+          <span><Storage sx={{ fontSize: 15 }} /> Storage</span>
+          <span className="workspace-storage-plan">FREE</span>
+        </Box>
+        <LinearProgress variant="determinate" value={8} className="workspace-storage-progress" />
+        <Typography className="workspace-storage-caption">Your private document vault</Typography>
+      </Box>
+
+      <Box className="workspace-account">
+        <Avatar className="workspace-account-avatar">
+          {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+        </Avatar>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography className="workspace-account-name" noWrap>
+            {user?.full_name || "Account User"}
+          </Typography>
+          <Typography className="workspace-account-email" noWrap>
+            {user?.email || "user@documenthub.ai"}
+          </Typography>
+        </Box>
+        <Tooltip title="Sign out">
+          <button type="button" className="workspace-logout" onClick={logout} aria-label="Sign out">
+            <Logout sx={{ fontSize: 17 }} />
+          </button>
+        </Tooltip>
+      </Box>
+    </Box>
   );
 }

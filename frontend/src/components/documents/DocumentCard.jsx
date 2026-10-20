@@ -1,12 +1,10 @@
 "use client";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { useState } from "react";
-import SmartToyRoundedIcon from "@mui/icons-material/SmartToyRounded";
-import AskAIDialog from "../AI/AskAIDialog";
-import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
+import { useState } from "react";
+import AskAIDialog from "../AI/AskAIDialog";
 import SummaryDialog from "../AI/SummaryDialog";
 import StatusBadge from "../AI/StatusBadge";
+
 import {
   Visibility,
   Delete,
@@ -14,9 +12,12 @@ import {
   CalendarMonth,
   Storage,
   PictureAsPdf,
-  Image,
+  Image as ImageIcon,
   InsertDriveFile,
 } from "@mui/icons-material";
+
+import SmartToyRoundedIcon from "@mui/icons-material/SmartToyRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
 import {
   Card,
@@ -27,314 +28,300 @@ import {
   IconButton,
   Tooltip,
   Stack,
+  Divider,
 } from "@mui/material";
 
 export default function DocumentCard({
   document,
   onView,
   onDelete,
-  onAskAI,
-  onDetails,
 }) {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
+
   const formattedDate = document.uploaded_at
-    ? new Date(document.uploaded_at).toLocaleDateString("en-IN", {
-        day: "numeric",
+    ? new Date(document.uploaded_at).toLocaleDateString("en-US", {
         month: "short",
+        day: "numeric",
         year: "numeric",
       })
     : "-";
 
   const fileSize = document.file_size
-    ? (document.file_size / 1024 / 1024).toFixed(2)
+    ? (document.file_size / (1024 * 1024)).toFixed(2)
     : "0";
 
   const extension =
     document.original_name?.split(".").pop()?.toLowerCase() || "";
 
-  const getIcon = () => {
-    if (extension === "pdf") {
-      return (
-        <PictureAsPdf
-          sx={{
-            fontSize: 42,
-            color: "#ef4444",
-          }}
-        />
-      );
-    }
+  const isPdf = extension === "pdf";
+  const isImage = ["png", "jpg", "jpeg", "gif", "webp"].includes(extension);
 
-    if (["png", "jpg", "jpeg", "gif", "webp"].includes(extension)) {
-      return (
-        <Image
-          sx={{
-            fontSize: 42,
-            color: "#22c55e",
-          }}
-        />
-      );
+  const getFormatBadge = () => {
+    if (isPdf) {
+      return {
+        icon: <PictureAsPdf sx={{ fontSize: 28, color: "#2563eb" }} />,
+        ext: "PDF",
+        badgeBg: "#eff6ff",
+        badgeColor: "#1d4ed8",
+        badgeBorder: "#bfdbfe",
+      };
     }
-
-    return (
-      <InsertDriveFile
-        sx={{
-          fontSize: 42,
-          color: "#2563eb",
-        }}
-      />
-    );
+    if (isImage) {
+      return {
+        icon: <ImageIcon sx={{ fontSize: 28, color: "#2563eb" }} />,
+        ext: extension.toUpperCase(),
+        badgeBg: "#eff6ff",
+        badgeColor: "#1d4ed8",
+        badgeBorder: "#bfdbfe",
+      };
+    }
+    return {
+      icon: <InsertDriveFile sx={{ fontSize: 28, color: "#2563eb" }} />,
+      ext: extension ? extension.toUpperCase() : "DOC",
+      badgeBg: "#eff6ff",
+      badgeColor: "#1d4ed8",
+      badgeBorder: "#bfdbfe",
+    };
   };
+
+  const badgeConfig = getFormatBadge();
 
   return (
     <>
-    <Card
-      elevation={1}
-      sx={{
-        width: "100%",
-        maxWidth: 280,
-        borderRadius: 3,
-        overflow: "hidden",
-        transition: "all .25s ease",
-        border: "1px solid",
-        borderColor: "grey.200",
-
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 12px 24px rgba(0,0,0,.12)",
-        },
-      }}
-    >
-      {/* File Preview */}
-      <Box
+      <Card
+        className="vault-file-card"
+        elevation={0}
         sx={{
-          height: 95,
-          bgcolor: "#f8fafc",
+          width: "100%",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderBottom: "1px solid",
-          borderColor: "grey.200",
-        }}
-      >
-        {getIcon()}
-      </Box>
-
-      <CardContent
-        sx={{
-          p: 1.8,
-          "&:last-child": {
-            pb: 1.8,
+          flexDirection: "column",
+          borderRadius: "0.85rem",
+          overflow: "hidden",
+          border: "1px solid #e2e8f0",
+          bgcolor: "#ffffff",
+          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+          transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+          "&:hover": {
+            transform: "translateY(-2px)",
+            borderColor: "#cbd5e1",
+            boxShadow: "0 8px 20px rgba(15, 23, 42, 0.08)",
           },
         }}
       >
-        {/* File Name */}
-        <Typography
-          fontSize={15}
-          fontWeight={700}
-          noWrap
-          title={document.original_name}
-        >
-          {document.original_name}
-        </Typography>
-
-        {/* Description */}
-        <Typography
-          variant="body2"
-          color="text.secondary"
+        {/* Card Header Preview Area */}
+        <Box
+          className="vault-file-preview"
           sx={{
-            mt: 0.5,
-            mb: 1.3,
-            fontSize: 12.5,
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            minHeight: 34,
+            height: 80,
+            bgcolor: "#f8fafc",
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottom: "1px solid #f1f5f9",
           }}
         >
-          {document.description || "No description available"}
-        </Typography>
-
-        {/* Category */}
-       <Box
-  display="flex"
-  justifyContent="space-between"
-  alignItems="center"
-  mb={1.3}
->
-  <Chip
-    label={document.ai_category || document.category || "Others"}
-    color="primary"
-    size="small"
-    sx={{
-      height: 24,
-      fontSize: 11,
-      fontWeight: 600,
-    }}
-  />
-
-  <StatusBadge
-    status={document.processing_status}
-  />
-</Box>
-
-        {/* Details */}
-        <Stack spacing={0.7} sx={{ mb: 1.5 }}>
-          <Box display="flex" alignItems="center" gap={0.8}>
-            <Storage sx={{ fontSize: 16, color: "text.secondary" }} />
-
-            <Typography
-              variant="caption"
-              color="text.secondary"
+          <Box display="flex" alignItems="center" gap={1.25}>
+            <Box className="vault-file-icon"
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: "0.6rem",
+                bgcolor: "#ffffff",
+                border: "1px solid #e2e8f0",
+                display: "grid",
+                placeItems: "center",
+                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+              }}
             >
-              {fileSize} MB
-            </Typography>
+              {badgeConfig.icon}
+            </Box>
+
+            <Box
+              component="span"
+              sx={{
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                px: 0.8,
+                py: 0.25,
+                borderRadius: "0.35rem",
+                bgcolor: badgeConfig.badgeBg,
+                color: badgeConfig.badgeColor,
+                border: `1px solid ${badgeConfig.badgeBorder}`,
+              }}
+            >
+              {badgeConfig.ext}
+            </Box>
           </Box>
 
-          <Box display="flex" alignItems="center" gap={0.8}>
-            <CalendarMonth
-              sx={{ fontSize: 16, color: "text.secondary" }}
+          <StatusBadge status={document.processing_status} />
+        </Box>
+
+        {/* Card Body */}
+        <CardContent className="vault-file-content" sx={{ p: 2.25, flex: "1 0 auto" }}>
+          {/* File Name */}
+          <Tooltip title={document.original_name}>
+            <Typography
+              sx={{
+                fontSize: "0.925rem",
+                fontWeight: 700,
+                color: "#0f172a",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+                "&:hover": { color: "#2563eb" },
+              }}
+              onClick={() => onView(document.id)}
+            >
+              {document.original_name}
+            </Typography>
+          </Tooltip>
+
+          {/* Category Chip */}
+          <Box sx={{ mt: 1, mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+            <Chip
+              label={document.ai_category || document.category || "General"}
+              size="small"
+              sx={{
+                height: 22,
+                fontSize: "0.72rem",
+                fontWeight: 600,
+                bgcolor: "#f1f5f9",
+                color: "#334155",
+                borderRadius: "0.35rem",
+              }}
             />
 
-            <Typography
-              variant="caption"
-              color="text.secondary"
-            >
-              {formattedDate}
-            </Typography>
+            {document.ai_category && (
+              <Typography variant="caption" sx={{ color: "#2563eb", fontSize: "0.68rem", fontWeight: 600 }}>
+                AI Categorized
+              </Typography>
+            )}
           </Box>
 
-          <Typography
-            variant="caption"
+          {/* Details Row */}
+          <Box
+            className="vault-file-actions"
             sx={{
-              color: "primary.main",
-              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              py: 0.75,
+              fontSize: "0.75rem",
+              color: "#64748b",
             }}
           >
-            {document.file_type}
-          </Typography>
-        </Stack>
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Storage sx={{ fontSize: 14 }} />
+              <span>{fileSize} MB</span>
+            </Box>
 
-        {/* Actions */}
-        <Stack
-          direction="row"
-          spacing={1}
-          justifyContent="center"
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <CalendarMonth sx={{ fontSize: 14 }} />
+              <span>{formattedDate}</span>
+            </Box>
+          </Box>
+        </CardContent>
+
+        <Divider sx={{ borderColor: "#f1f5f9" }} />
+
+        {/* Actions Toolbar */}
+        <Box
+          sx={{
+            p: 1.25,
+            px: 2,
+            bgcolor: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
-          <Tooltip title="View">
-            <IconButton
-              size="small"
-              onClick={() => onView(document.id)}
-              sx={{
-                width: 36,
-                height: 36,
-                border: "1px solid",
-                borderColor: "grey.300",
+          <Box display="flex" gap={0.75}>
+            <Tooltip title="View Document">
+              <IconButton
+                size="small"
+                onClick={() => onView(document.id)}
+                sx={{
+                  color: "#475569",
+                  p: 0.7,
+                  "&:hover": { color: "#2563eb", bgcolor: "#eff6ff" },
+                }}
+              >
+                <Visibility sx={{ fontSize: 17 }} />
+              </IconButton>
+            </Tooltip>
 
-                "&:hover": {
-                  bgcolor: "primary.light",
-                  color: "white",
-                  borderColor: "primary.main",
-                },
-              }}
-            >
-              <Visibility fontSize="small" />
-            </IconButton>
-          </Tooltip>
+            <Tooltip title="Download">
+              <IconButton
+                size="small"
+                onClick={() => onView(document.id)}
+                sx={{
+                  color: "#475569",
+                  p: 0.7,
+                  "&:hover": { color: "#2563eb", bgcolor: "#eff6ff" },
+                }}
+              >
+                <Download sx={{ fontSize: 17 }} />
+              </IconButton>
+            </Tooltip>
 
-          <Tooltip title="Download">
-            <IconButton
-              size="small"
-              onClick={() => onView(document.id)}
-              sx={{
-                width: 36,
-                height: 36,
-                border: "1px solid",
-                borderColor: "grey.300",
+            <Tooltip title="AI Summary">
+              <IconButton
+                size="small"
+                onClick={() => setSummaryOpen(true)}
+                sx={{
+                  color: "#2563eb",
+                  p: 0.7,
+                  "&:hover": { bgcolor: "#eff6ff" },
+                }}
+              >
+                <AutoAwesomeRoundedIcon sx={{ fontSize: 17 }} />
+              </IconButton>
+            </Tooltip>
 
-                "&:hover": {
-                  bgcolor: "success.light",
-                  color: "white",
-                  borderColor: "success.main",
-                },
-              }}
-            >
-              <Download fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="AI Summary">
-            <IconButton
-              size="small"
-              onClick={() => setSummaryOpen(true)}
-              sx={{
-                width: 36,
-                height: 36,
-                border: "1px solid",
-                borderColor: "warning.main",
+            <Tooltip title="Ask AI about this Document">
+              <IconButton
+                size="small"
+                onClick={() => setAskOpen(true)}
+                sx={{
+                  color: "#2563eb",
+                  p: 0.7,
+                  "&:hover": { bgcolor: "#eff6ff" },
+                }}
+              >
+                <SmartToyRoundedIcon sx={{ fontSize: 17 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
 
-                "&:hover": {
-                  bgcolor: "warning.main",
-                  color: "white",
-                },
-              }}
-            >
-              <AutoAwesomeRoundedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Ask AI">
-            <IconButton
-              size="small"
-              onClick={() => setAskOpen(true)}
-              sx={{
-                width: 36,
-                height: 36,
-                border: "1px solid",
-                borderColor: "secondary.main",
-
-                "&:hover": {
-                  bgcolor: "secondary.main",
-                  color: "white",
-                },
-              }}
-            >
-              <SmartToyRoundedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Delete Document">
             <IconButton
               size="small"
               onClick={() => onDelete(document.id)}
               sx={{
-                width: 36,
-                height: 36,
-                border: "1px solid",
-                borderColor: "error.main",
-                color: "error.main",
-
-                "&:hover": {
-                  bgcolor: "error.main",
-                  color: "white",
-                },
+                color: "#94a3b8",
+                p: 0.7,
+                "&:hover": { color: "#ef4444", bgcolor: "#fef2f2" },
               }}
             >
-              <Delete fontSize="small" />
+              <Delete sx={{ fontSize: 17 }} />
             </IconButton>
           </Tooltip>
-        </Stack>
-      </CardContent>
-    </Card>
-    <SummaryDialog
-      open={summaryOpen}
-      onClose={() => setSummaryOpen(false)}
-      documentId={document.id}
-    />
-    <AskAIDialog
-      open={askOpen}
-      onClose={() => setAskOpen(false)}
-      documentId={document.id}
-    />
+        </Box>
+      </Card>
+
+      <SummaryDialog
+        open={summaryOpen}
+        onClose={() => setSummaryOpen(false)}
+        documentId={document.id}
+      />
+      <AskAIDialog
+        open={askOpen}
+        onClose={() => setAskOpen(false)}
+        documentId={document.id}
+      />
     </>
   );
 }

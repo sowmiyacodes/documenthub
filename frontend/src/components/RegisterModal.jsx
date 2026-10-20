@@ -1,17 +1,16 @@
 "use client";
-import toast from "react-hot-toast";
+
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
+import { ArrowUpRight, Check, Eye, EyeOff, LockKeyhole, Orbit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
 
-export default function RegisterModal({
-  isOpen,
-  onClose,
-  openLogin,
-}) {
+export default function RegisterModal({ isOpen, onClose, openLogin }) {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -19,324 +18,167 @@ export default function RegisterModal({
     confirmPassword: "",
   });
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
+  const handleChange = (event) => {
+    setFormData((previous) => ({
+      ...previous,
+      [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  if (formData.password !== formData.confirmPassword) {
-    toast.error("Passwords do not match");
-    return;
-  }
-
-  const user = {
-    full_name: formData.full_name,
-    email: formData.email,
-    password: formData.password,
-  };
-
-  try {
-    const response = await fetch("http://localhost:5000/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        toast.error(data.message);
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
-    // Save token if needed
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+    const user = {
+      full_name: formData.full_name,
+      email: formData.email,
+      password: formData.password,
+    };
 
-    toast.error(data.message);
+    try {
+      setSubmitting(true);
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user),
+      });
 
-    // Clear form
-    setFormData({
-      full_name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
+      const data = await response.json();
 
-    onClose();
+      if (!response.ok) {
+        toast.error(data.message || "Failed to create account");
+        return;
+      }
 
-    // Optional: Open login modal instead
-    // openLogin();
-
-  } catch (error) {
-    console.error(error);
-    alert("Something went wrong");
-  }
-};
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success("Account created successfully! Welcome to DocumentHub.");
+      setFormData({ full_name: "", email: "", password: "", confirmPassword: "" });
+      onClose();
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      toast.error("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-    >
-      <div className="grid h-full lg:grid-cols-2">
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="studio-auth-layout studio-auth-layout-register">
+        <aside className="studio-auth-aside">
+          <a className="studio-brand studio-auth-brand" href="#hero">
+            <span className="studio-brand-mark"><Orbit size={20} strokeWidth={1.8} /></span>
+            <span className="studio-brand-name">document<span>hub</span></span>
+          </a>
+          <div className="studio-auth-aside-copy">
+            <span className="studio-auth-kicker">A FRESH PLACE TO START</span>
+            <h2>Make a little space for <em>peace of mind.</em></h2>
+            <p>Bring your everyday paperwork together and make it easier to find what matters.</p>
+          </div>
+          <div className="studio-auth-aside-bottom">
+            <span><Check size={14} /> Keep files in one organized space</span>
+            <span><Check size={14} /> Find details in plain language</span>
+            <span className="studio-auth-private"><LockKeyhole size={14} /> Your archive is yours</span>
+          </div>
+          <span className="studio-auth-edition">DOCUMENTHUB / YOUR PRIVATE ARCHIVE</span>
+        </aside>
 
-        {/* LEFT SIDE */}
+        <div className="studio-auth-form-panel">
+          <div className="studio-auth-form">
+            <span className="studio-auth-kicker studio-auth-kicker-dark">START WITH THE IMPORTANT THINGS</span>
+            <h2>Create your account.</h2>
+            <p className="studio-auth-description">Set up your own home for the documents that matter.</p>
 
-        <div className="hidden h-full lg:block">
-          <img
-            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1400"
-            alt="LifeHub AI"
-            className="h-full w-full object-cover"
-          />
-        </div>
-
-        {/* RIGHT SIDE */}
-
-        <div className="flex h-full items-center justify-center bg-white px-10 py-14 lg:px-20">
-
-          <div className="w-full max-w-md">
-
-            {/* Logo */}
-
-            <div className="mb-12 flex items-center gap-4">
-
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold text-white">
-                L
-              </div>
-
-              <div>
-                <h1 className="text-2xl font-bold">
-                  LifeHub AI
-                </h1>
-
-                <p className="text-sm text-slate-500">
-                  Personal Digital Management
-                </p>
-              </div>
-
-            </div>
-
-            <h2 className="text-4xl font-bold text-slate-900">
-              Create Account
-            </h2>
-
-            <p className="mt-3 text-lg text-slate-500">
-            
-            </p>
-
-            <form
-              onSubmit={handleSubmit}
-              className="mt-10 space-y-6"
-            >
-              {/* Full Name */}
-
-              <div>
-                <label className="mb-2 block font-medium text-slate-700">
-                  Full Name
-                </label>
-
+            <form onSubmit={handleSubmit} className="studio-auth-fields studio-auth-fields-register">
+              <div className="studio-field">
+                <label htmlFor="register-name">Your name</label>
                 <input
+                  id="register-name"
                   type="text"
                   name="full_name"
-                  placeholder="John Doe"
+                  autoComplete="name"
+                  required
+                  placeholder="Alex Morgan"
                   value={formData.full_name}
                   onChange={handleChange}
-                  required
-                  className="
-                    h-14
-                    w-full
-                    rounded-2xl
-                    border
-                    border-slate-300
-                    px-5
-                    outline-none
-                    transition
-                    focus:border-blue-600
-                    focus:ring-4
-                    focus:ring-blue-100
-                  "
                 />
               </div>
-
-              {/* Email */}
-
-              <div>
-                <label className="mb-2 block font-medium text-slate-700">
-                  Email
-                </label>
-
+              <div className="studio-field">
+                <label htmlFor="register-email">Email address</label>
                 <input
+                  id="register-email"
                   type="email"
                   name="email"
+                  autoComplete="email"
+                  required
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  required
-                  className="
-                    h-14
-                    w-full
-                    rounded-2xl
-                    border
-                    border-slate-300
-                    px-5
-                    outline-none
-                    transition
-                    focus:border-blue-600
-                    focus:ring-4
-                    focus:ring-blue-100
-                  "
                 />
               </div>
-
-              {/* Password */}
-
-              <div>
-                <label className="mb-2 block font-medium text-slate-700">
-                  Password
-                </label>
-
-                <div className="relative">
-
+              <div className="studio-field">
+                <label htmlFor="register-password">Password</label>
+                <div className="studio-password-field">
                   <input
+                    id="register-password"
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    placeholder="Create password"
+                    autoComplete="new-password"
+                    required
+                    placeholder="Create a password"
                     value={formData.password}
                     onChange={handleChange}
-                    required
-                    className="
-                      h-14
-                      w-full
-                      rounded-2xl
-                      border
-                      border-slate-300
-                      px-5
-                      pr-14
-                      outline-none
-                      transition
-                      focus:border-blue-600
-                      focus:ring-4
-                      focus:ring-blue-100
-                    "
                   />
-
                   <button
                     type="button"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500"
                   >
-                    {showPassword ? (
-                      <EyeOff size={22} />
-                    ) : (
-                      <Eye size={22} />
-                    )}
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
-
                 </div>
               </div>
-
-              {/* Confirm Password */}
-
-              <div>
-                <label className="mb-2 block font-medium text-slate-700">
-                  Confirm Password
-                </label>
-
-                <div className="relative">
-
+              <div className="studio-field">
+                <label htmlFor="register-confirm-password">Confirm password</label>
+                <div className="studio-password-field">
                   <input
+                    id="register-confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
-                    placeholder="Confirm password"
+                    autoComplete="new-password"
+                    required
+                    placeholder="Enter it once more"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    required
-                    className="
-                      h-14
-                      w-full
-                      rounded-2xl
-                      border
-                      border-slate-300
-                      px-5
-                      pr-14
-                      outline-none
-                      transition
-                      focus:border-blue-600
-                      focus:ring-4
-                      focus:ring-blue-100
-                    "
                   />
-
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff size={22} />
-                    ) : (
-                      <Eye size={22} />
-                    )}
+                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
-
                 </div>
               </div>
-
-              {/* Register Button */}
-
-              <button
-                type="submit"
-                className="
-                  h-14
-                  w-full
-                  rounded-2xl
-                  bg-blue-600
-                  text-lg
-                  font-semibold
-                  text-white
-                  transition
-                  hover:bg-blue-700
-                "
-              >
-                Create Account
+              <button type="submit" disabled={submitting} className="studio-auth-submit">
+                {submitting ? "Creating your account..." : "Create your account"}
+                {!submitting && <ArrowUpRight size={17} />}
               </button>
-
             </form>
 
-            {/* Bottom Link */}
-
-            <div className="mt-10 text-center text-base">
-
-              <span className="text-slate-500">
-                Already have an account?
-              </span>
-
-              <button
-                onClick={() => {
-                  onClose();
-                  openLogin();
-                }}
-                className="ml-2 font-semibold text-blue-600 hover:underline"
-              >
-                Sign In
-              </button>
-
-            </div>
-
+            <p className="studio-auth-switch">
+              Already have an account?{" "}
+              <button onClick={() => { onClose(); openLogin?.(); }}>Sign in</button>
+            </p>
           </div>
-
+          <span className="studio-auth-footnote">A CLEARER WAY TO KEEP THE IMPORTANT THINGS.</span>
         </div>
-
       </div>
     </Modal>
   );

@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -14,6 +13,10 @@ import {
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import FolderSharedOutlinedIcon from "@mui/icons-material/FolderSharedOutlined";
 
 import ChatSidebar from "../../../components/AI/ChatSidebar";
 import ChatMessage from "../../../components/AI/ChatMessage";
@@ -32,20 +35,32 @@ import { viewDocument } from "../../../services/document";
 
 const suggestions = [
   {
-    title: "Find information",
-    prompt: "What are the main topics covered in my documents?",
+    icon: <DescriptionOutlinedIcon sx={{ fontSize: 20, color: "#2563eb" }} />,
+    tag: "Synthesis",
+    title: "Executive Summary",
+    description: "Get the main points from across your files.",
+    prompt: "Summarize the most important information and takeaways across my uploaded documents.",
   },
   {
-    title: "Understand a document",
-    prompt: "Summarize the most important information in my documents.",
+    icon: <CalendarMonthOutlinedIcon sx={{ fontSize: 20, color: "#2563eb" }} />,
+    tag: "Facts & Timeline",
+    title: "Dates & Deadlines",
+    description: "Find due dates, renewals, and important milestones.",
+    prompt: "Find all important dates, deadlines, and renewal milestones mentioned in my documents.",
   },
   {
-    title: "Find a specific detail",
-    prompt: "Find important dates and deadlines in my documents.",
+    icon: <SearchRoundedIcon sx={{ fontSize: 20, color: "#2563eb" }} />,
+    tag: "Analysis",
+    title: "Key Topics & Themes",
+    description: "See the topics and ideas that come up most.",
+    prompt: "What are the primary topics and recurring categories covered in my documents?",
   },
   {
-    title: "Explore my files",
-    prompt: "What types of documents have I uploaded?",
+    icon: <FolderSharedOutlinedIcon sx={{ fontSize: 20, color: "#2563eb" }} />,
+    tag: "Overview",
+    title: "Document Inventory",
+    description: "See what kinds of records are in your archive.",
+    prompt: "Give me an overview of all the document types, categories, and records I currently have stored.",
   },
 ];
 
@@ -76,7 +91,6 @@ export default function AssistantPage() {
     const loadHistory = async () => {
       try {
         setHistoryLoading(true);
-
         const response = await getConversations();
 
         if (cancelled) return;
@@ -263,7 +277,6 @@ export default function AssistantPage() {
   const handleRetry = async (message) => {
     if (sendingRef.current || !message?.content) return;
 
-    // Remove the failed optimistic message before resending it.
     setMessages((previous) =>
       previous.filter((item) => item.id !== message.id)
     );
@@ -346,21 +359,25 @@ export default function AssistantPage() {
 
   return (
     <Box
+      className="dashboard-assistant assistant-workspace"
       sx={{
         display: "flex",
         height: {
           xs: "calc(100vh - 64px)",
-          md: "calc(100vh - 72px)",
+          md: "calc(100vh - 82px)",
         },
         minHeight: 520,
         overflow: "hidden",
-        bgcolor: "#fff",
-        borderRadius: { xs: 0, md: 3 },
-        border: { xs: "none", md: "1px solid #E2E8F0" },
+        bgcolor: "#ffffff",
+        borderRadius: { xs: 0, md: "1rem" },
+        border: { xs: "none", md: "1px solid #e2e8f0" },
+        boxShadow: "0 1px 3px 0 rgba(15, 23, 42, 0.05)",
       }}
     >
+      {/* Sidebar */}
       {sidebarOpen && (
         <Box
+          className="assistant-history-panel"
           sx={{
             display: { xs: "none", md: "block" },
             height: "100%",
@@ -378,6 +395,7 @@ export default function AssistantPage() {
         </Box>
       )}
 
+      {/* Main Chat Workspace */}
       <Box
         sx={{
           display: "flex",
@@ -385,37 +403,66 @@ export default function AssistantPage() {
           flex: 1,
           minWidth: 0,
           height: "100%",
+          bgcolor: "#fcfdfe",
         }}
       >
-        {/* Header */}
+        {/* Workspace Header */}
         <Box
+          className="assistant-workspace-header"
           sx={{
-            px: { xs: 1.5, md: 3 },
+            px: { xs: 2, md: 3 },
             py: 1.5,
-            borderBottom: "1px solid #E2E8F0",
+            borderBottom: "1px solid #e2e8f0",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: 2,
+            bgcolor: "#ffffff",
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Tooltip title={sidebarOpen ? "Hide history" : "Show history"}>
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <Tooltip title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}>
               <IconButton
                 onClick={() => setSidebarOpen((value) => !value)}
-                sx={{ color: "#475569" }}
+                size="small"
+                sx={{
+                  color: "#475569",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "0.5rem",
+                  p: 0.7,
+                }}
               >
-                <MenuRoundedIcon />
+                <MenuRoundedIcon sx={{ fontSize: 19 }} />
               </IconButton>
             </Tooltip>
 
             <Box>
-              <Typography fontWeight={800} color="#0F172A">
-                AI Assistant
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography sx={{ fontWeight: 700, color: "#0f172a", fontSize: "0.95rem" }}>
+                  AI Document Assistant
+                </Typography>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    px: 0.8,
+                    py: 0.15,
+                    borderRadius: "9999px",
+                    bgcolor: "#eff6ff",
+                    color: "#1d4ed8",
+                    border: "1px solid #bfdbfe",
+                    fontSize: "0.7rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  <Box sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: "#2563eb" }} />
+                  Active
+                </Box>
+              </Box>
 
-              <Typography variant="caption" color="text.secondary">
-                Your personal document intelligence
+              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.75rem" }}>
+                Ask questions about your archive
               </Typography>
             </Box>
           </Stack>
@@ -424,120 +471,184 @@ export default function AssistantPage() {
             startIcon={<AddRoundedIcon />}
             onClick={handleNewChat}
             disabled={sending}
+            variant="outlined"
+            size="small"
             sx={{
               display: { xs: "inline-flex", md: "none" },
               textTransform: "none",
+              borderRadius: "0.5rem",
+              fontSize: "0.8rem",
             }}
           >
-            New
+            New Chat
           </Button>
         </Box>
 
-        {/* Chat area */}
+        {/* Chat Stream Area */}
         <Box
+          className="assistant-message-stream"
           sx={{
             flex: 1,
             overflowY: "auto",
-            px: { xs: 2, md: 4 },
-            py: 3,
+            px: { xs: 2, sm: 3, md: 5 },
+            py: 3.5,
           }}
         >
           {messagesLoading ? (
             <Box
+              className="assistant-loading-state"
               sx={{
                 minHeight: "100%",
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
+                gap: 1.5,
               }}
             >
-              <CircularProgress />
+              <CircularProgress size={32} thickness={4} />
+              <Typography variant="body2" sx={{ color: "#64748b" }}>
+                Loading conversation messages...
+              </Typography>
             </Box>
           ) : messages.length === 0 ? (
             <Box
+              className="assistant-empty-state"
               sx={{
-                maxWidth: 850,
+                maxWidth: 820,
                 mx: "auto",
                 minHeight: "100%",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
+                py: 4,
               }}
             >
-              <Box textAlign="center" mb={4}>
+              {/* Hero Greeting */}
+              <Box textAlign="center" mb={4.5}>
                 <Box
+                  className="assistant-welcome-icon"
                   sx={{
-                    width: 68,
-                    height: 68,
-                    borderRadius: 4,
-                    bgcolor: "#DBEAFE",
-                    color: "#2563EB",
+                    width: 64,
+                    height: 64,
+                    borderRadius: "1.25rem",
+                    background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+                    color: "#2563eb",
                     display: "grid",
                     placeItems: "center",
                     mx: "auto",
                     mb: 2.5,
+                    border: "1px solid #bfdbfe",
+                    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.12)",
                   }}
                 >
-                  <AutoAwesomeRoundedIcon sx={{ fontSize: 34 }} />
+                  <AutoAwesomeRoundedIcon sx={{ fontSize: 32 }} />
                 </Box>
 
+                <Typography className="assistant-welcome-kicker">
+                  DOCUMENTHUB INTELLIGENCE
+                </Typography>
                 <Typography
-                  variant="h4"
-                  fontWeight={800}
-                  color="#0F172A"
-                  sx={{ fontSize: { xs: 25, md: 32 } }}
+                  className="assistant-welcome-title"
+                  variant="h5"
+                  sx={{
+                    fontWeight: 800,
+                    color: "#0f172a",
+                    fontSize: { xs: "1.45rem", md: "1.85rem" },
+                    letterSpacing: "-0.02em",
+                  }}
                 >
-                  What can I help you find?
+                  Document Intelligence Assistant
                 </Typography>
 
-                <Typography color="text.secondary" mt={1.5}>
-                  Ask questions about your uploaded documents in natural language.
+                <Typography
+                  sx={{
+                    color: "#64748b",
+                    mt: 1.25,
+                    maxWidth: 580,
+                    mx: "auto",
+                    fontSize: "0.95rem",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Ask a question and get a clear answer grounded in your own documents.
                 </Typography>
               </Box>
 
+              {/* Suggestion Cards Grid */}
               <Box
+                className="assistant-suggestion-grid"
                 sx={{
                   display: "grid",
                   gridTemplateColumns: {
                     xs: "1fr",
                     sm: "repeat(2, minmax(0, 1fr))",
                   },
-                  gap: 1.5,
+                  gap: 2,
                 }}
               >
                 {suggestions.map((item) => (
                   <Button
                     key={item.title}
+                    className="assistant-prompt-card"
                     variant="outlined"
                     disabled={sending}
                     onClick={() => handleSend(item.prompt)}
                     sx={{
-                      p: 2,
+                      p: 2.2,
                       textAlign: "left",
                       alignItems: "flex-start",
                       justifyContent: "flex-start",
                       textTransform: "none",
-                      color: "#334155",
-                      borderColor: "#E2E8F0",
-                      borderRadius: 3,
-                      minHeight: 88,
+                      color: "#1e293b",
+                      borderColor: "#e2e8f0",
+                      bgcolor: "#ffffff",
+                      borderRadius: "0.85rem",
+                      minHeight: 96,
+                      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+                      transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
                       "&:hover": {
-                        borderColor: "#93C5FD",
-                        bgcolor: "#F8FAFF",
+                        borderColor: "#93c5fd",
+                        bgcolor: "#f8fafc",
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 4px 12px rgba(37, 99, 235, 0.08)",
                       },
                     }}
                   >
-                    <Box>
-                      <Typography fontWeight={700} mb={0.5}>
-                        {item.title}
-                      </Typography>
+                    <Box sx={{ width: "100%" }}>
+                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.75 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <span className="assistant-prompt-icon">{item.icon}</span>
+                          <Typography className="assistant-prompt-title" sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>
+                            {item.title}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            fontSize: "0.7rem",
+                            fontWeight: 600,
+                            color: "#64748b",
+                            bgcolor: "#f1f5f9",
+                            px: 0.8,
+                            py: 0.2,
+                            borderRadius: "9999px",
+                          }}
+                        >
+                          {item.tag}
+                        </Typography>
+                      </Box>
 
                       <Typography
                         variant="body2"
-                        color="text.secondary"
-                        sx={{ whiteSpace: "normal" }}
+                        sx={{
+                          color: "#64748b",
+                          fontSize: "0.825rem",
+                          lineHeight: 1.5,
+                          whiteSpace: "normal",
+                        }}
                       >
-                        {item.prompt}
+                        {item.description}
                       </Typography>
                     </Box>
                   </Button>
@@ -545,7 +656,7 @@ export default function AssistantPage() {
               </Box>
             </Box>
           ) : (
-            <Box sx={{ maxWidth: 850, mx: "auto" }}>
+            <Box sx={{ maxWidth: 860, mx: "auto" }}>
               {messages.map((message, index) => (
                 <ChatMessage
                   key={message.id || `${message.role}-${index}`}
@@ -560,11 +671,28 @@ export default function AssistantPage() {
               ))}
 
               {sending && (
-                <Box display="flex" alignItems="center" gap={1.5} mb={3}>
-                  <CircularProgress size={24} />
+                <Box
+                  className="assistant-input-dock"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    mb: 3,
+                    p: 2,
+                    borderRadius: "0.85rem",
+                    bgcolor: "#ffffff",
+                    border: "1px solid #e2e8f0",
+                    width: "fit-content",
+                    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+                  }}
+                >
+                  <CircularProgress size={18} thickness={5} sx={{ color: "#2563eb" }} />
 
-                  <Typography color="text.secondary" variant="body2">
-                    LifeHub AI is thinking...
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#475569", fontWeight: 500, fontSize: "0.85rem" }}
+                  >
+                    Analyzing documents & synthesizing response...
                   </Typography>
                 </Box>
               )}
@@ -577,27 +705,31 @@ export default function AssistantPage() {
             <Box
               role="alert"
               sx={{
-                maxWidth: 850,
+                maxWidth: 860,
                 mx: "auto",
                 mt: 2,
-                p: 1.5,
-                borderRadius: 2,
-                bgcolor: "#FEF2F2",
-                color: "#B91C1C",
+                p: 1.75,
+                borderRadius: "0.75rem",
+                bgcolor: "#fef2f2",
+                border: "1px solid #fecaca",
+                color: "#b91c1c",
               }}
             >
-              <Typography variant="body2">{error}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.85rem" }}>
+                {error}
+              </Typography>
             </Box>
           )}
         </Box>
 
-        {/* Message input */}
+        {/* Floating Input Dock */}
         <Box
           sx={{
-            px: { xs: 1.5, md: 3 },
+            px: { xs: 2, md: 4 },
             pt: 1.5,
-            pb: 2,
-            borderTop: "1px solid #F1F5F9",
+            pb: 2.5,
+            borderTop: "1px solid #e2e8f0",
+            bgcolor: "#ffffff",
           }}
         >
           <ChatInput

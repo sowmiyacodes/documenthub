@@ -1,41 +1,32 @@
 "use client";
-import toast from "react-hot-toast";
+
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
+import { ArrowUpRight, Check, Eye, EyeOff, LockKeyhole, Orbit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
 
-
-export default function LoginModal({
-  isOpen,
-  onClose,
-  openRegister,
-}) {
+export default function LoginModal({ isOpen, onClose, openRegister }) {
   const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
+  const handleChange = (event) => {
+    setFormData((previous) => ({
+      ...previous,
+      [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     try {
+      setSubmitting(true);
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
@@ -45,216 +36,100 @@ export default function LoginModal({
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message);
+        toast.error(data.message || "Failed to sign in");
         return;
       }
 
-      // Success Toast
-      toast.success("Welcome back!");
-
-      // Save authentication data
+      toast.success("Welcome back to DocumentHub AI!");
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
-      // Clear the form
-      setFormData({
-        email: "",
-        password: "",
-      });
-
-      // Close the login modal
+      setFormData({ email: "", password: "" });
       onClose();
-
-      // Redirect to dashboard
       navigate("/dashboard");
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-    >
-      <div className="grid h-full lg:grid-cols-2">
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="studio-auth-layout">
+        <aside className="studio-auth-aside">
+          <a className="studio-brand studio-auth-brand" href="#hero">
+            <span className="studio-brand-mark"><Orbit size={20} strokeWidth={1.8} /></span>
+            <span className="studio-brand-name">document<span>hub</span></span>
+          </a>
+          <div className="studio-auth-aside-copy">
+            <span className="studio-auth-kicker">YOUR DOCUMENT DESK</span>
+            <h2>Everything important, <em>right where you left it.</em></h2>
+            <p>Pick up where you left off, with your files and answers in one place.</p>
+          </div>
+          <div className="studio-auth-aside-bottom">
+            <span><Check size={14} /> One home for your documents</span>
+            <span><Check size={14} /> Answers linked to their sources</span>
+            <span className="studio-auth-private"><LockKeyhole size={14} /> Private by design</span>
+          </div>
+          <span className="studio-auth-edition">DOCUMENTHUB / YOUR PRIVATE ARCHIVE</span>
+        </aside>
 
-        {/* LEFT SIDE */}
+        <div className="studio-auth-form-panel">
+          <div className="studio-auth-form">
+            <span className="studio-auth-kicker studio-auth-kicker-dark">GOOD TO SEE YOU AGAIN</span>
+            <h2>Welcome back.</h2>
+            <p className="studio-auth-description">Sign in to return to your personal document desk.</p>
 
-        <div className="hidden lg:block h-full">
-
-          <img
-            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1400"
-            alt="LifeHub AI"
-            className="h-full w-full object-cover"
-          />
-
-        </div>
-
-        {/* RIGHT SIDE */}
-
-        <div className="flex h-full items-center justify-center bg-white px-10 py-14 lg:px-20">
-
-          <div className="w-full max-w-md">
-
-            {/* Logo */}
-
-            <div className="mb-12 flex items-center gap-4">
-
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold text-white">
-                L
-              </div>
-
-              <div>
-
-                <h1 className="text-2xl font-bold">
-                  LifeHub AI
-                </h1>
-
-                <p className="text-sm text-slate-500">
-                  Personal Digital Management
-                </p>
-
-              </div>
-
-            </div>
-
-            <h2 className="text-4xl font-bold text-slate-900">
-              Welcome Back
-            </h2>
-
-            <p className="mt-3 text-lg text-slate-500">
-              Sign in to continue.
-            </p>
-
-            <form
-              onSubmit={handleSubmit}
-              className="mt-10 space-y-7"
-            >
-              {/* Email */}
-
-              <div>
-
-                <label className="mb-2 block font-medium text-slate-700">
-                  Email
-                </label>
-
+            <form onSubmit={handleSubmit} className="studio-auth-fields">
+              <div className="studio-field">
+                <label htmlFor="login-email">Email address</label>
                 <input
+                  id="login-email"
                   type="email"
                   name="email"
+                  autoComplete="email"
+                  required
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="
-                    h-14
-                    w-full
-                    rounded-2xl
-                    border
-                    border-slate-300
-                    px-5
-                    text-base
-                    outline-none
-                    transition
-                    focus:border-blue-600
-                    focus:ring-4
-                    focus:ring-blue-100
-                  "
                 />
-
               </div>
-
-              {/* Password */}
-
-              <div>
-
-                <label className="mb-2 block font-medium text-slate-700">
-                  Password
-                </label>
-
-                <div className="relative">
-
+              <div className="studio-field">
+                <label htmlFor="login-password">Password</label>
+                <div className="studio-password-field">
                   <input
+                    id="login-password"
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    placeholder="Enter password"
+                    autoComplete="current-password"
+                    required
+                    placeholder="Your password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="
-                      h-14
-                      w-full
-                      rounded-2xl
-                      border
-                      border-slate-300
-                      px-5
-                      pr-14
-                      outline-none
-                      transition
-                      focus:border-blue-600
-                      focus:ring-4
-                      focus:ring-blue-100
-                    "
                   />
-
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowPassword(!showPassword)
-                    }
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? (
-                      <EyeOff size={22} />
-                    ) : (
-                      <Eye size={22} />
-                    )}
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
-
                 </div>
-
               </div>
-
-              <button
-                type="submit"
-                className="
-                  h-14
-                  w-full
-                  rounded-2xl
-                  bg-blue-600
-                  text-lg
-                  font-semibold
-                  text-white
-                  transition
-                  hover:bg-blue-700
-                "
-              >
-                Sign In
+              <button type="submit" disabled={submitting} className="studio-auth-submit">
+                {submitting ? "Signing you in..." : "Sign in to your desk"}
+                {!submitting && <ArrowUpRight size={17} />}
               </button>
-
             </form>
 
-            <div className="mt-10 text-center text-base">
-
-              <span className="text-slate-500">
-                Don't have an account?
-              </span>
-
-              <button
-                onClick={() => {
-                  onClose();
-                  openRegister();
-                }}
-                className="ml-2 font-semibold text-blue-600 hover:underline"
-              >
-                Register
-              </button>
-
-            </div>
-
+            <p className="studio-auth-switch">
+              New to DocumentHub?{" "}
+              <button onClick={() => { onClose(); openRegister(); }}>Create an account</button>
+            </p>
           </div>
-
+          <span className="studio-auth-footnote">A CLEARER WAY TO KEEP THE IMPORTANT THINGS.</span>
         </div>
-
       </div>
     </Modal>
   );

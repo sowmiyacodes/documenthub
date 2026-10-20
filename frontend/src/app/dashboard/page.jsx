@@ -1,386 +1,211 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Box,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
   Button,
-  Avatar,
-  Stack,
+  Card,
   Chip,
+  Grid,
+  IconButton,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-
 import {
+  ArrowForward,
+  Category,
   Description,
   Storage,
-  Category,
-  AutoAwesome,
   Upload,
-  ArrowForward,
+  Visibility,
 } from "@mui/icons-material";
+import { getDocuments, viewDocument } from "@/services/document";
+import StatusBadge from "@/components/AI/StatusBadge";
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+};
 
 export default function DashboardPage() {
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const user =
     typeof window !== "undefined"
       ? JSON.parse(localStorage.getItem("user") || "{}")
       : {};
 
-  const greeting = () => {
-    const hour = new Date().getHours();
+  useEffect(() => {
+    let active = true;
 
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    return "Good Evening";
+    const fetchDocuments = async () => {
+      try {
+        setLoading(true);
+        const response = await getDocuments();
+        if (active && Array.isArray(response?.documents)) {
+          setDocuments(response.documents);
+        }
+      } catch (error) {
+        console.error("Dashboard fetch error:", error);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    fetchDocuments();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const documentCount = documents.length;
+  const storageUsed = (
+    documents.reduce((total, document) => total + (document.file_size || 0), 0) /
+    (1024 * 1024)
+  ).toFixed(1);
+  const categoryCount = new Set(
+    documents.map((document) => document.ai_category || document.category || "Other")
+  ).size;
+  const recentDocuments = documents.slice(0, 5);
+
+  const handleOpenDocument = async (id) => {
+    try {
+      const response = await viewDocument(id);
+      if (response?.url) window.open(response.url, "_blank");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const stats = [
+  const metrics = [
     {
-      title: "Documents",
-      value: "0",
+      label: "Documents",
+      value: loading ? "—" : documentCount,
       icon: <Description />,
-      color: "#2563EB",
-      bg: "#EEF4FF",
     },
     {
-      title: "Storage Used",
-      value: "0 MB",
-      icon: <Storage />,
-      color: "#059669",
-      bg: "#ECFDF5",
-    },
-    {
-      title: "Categories",
-      value: "0",
+      label: "Categories",
+      value: loading ? "—" : categoryCount,
       icon: <Category />,
-      color: "#EA580C",
-      bg: "#FFF7ED",
     },
     {
-      title: "AI Features",
-      value: "Coming Soon",
-      icon: <AutoAwesome />,
-      color: "#7C3AED",
-      bg: "#F5F3FF",
+      label: "Storage used",
+      value: loading ? "—" : `${storageUsed} MB`,
+      icon: <Storage />,
     },
   ];
 
   return (
-    <Box sx={{ p: 1 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Avatar
-            sx={{
-              width: 56,
-              height: 56,
-              bgcolor: "#2563EB",
-              fontSize: 24,
-              fontWeight: 700,
-            }}
-          >
-            {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
-          </Avatar>
+    <Box className="dashboard-overview dashboard-overview-new">
+      <Box className="overview-welcome">
+        <Box className="overview-welcome-copy">
+          <Typography className="overview-kicker">YOUR DOCUMENT SPACE</Typography>
+          <Typography component="h1" className="overview-title">
+            {getGreeting()}, {user?.full_name?.split(" ")[0] || "there"}.
+          </Typography>
+          <Typography className="overview-description">
+            Everything you keep, ready when you need it.
+          </Typography>
+        </Box>
 
-          <Box>
-            <Typography variant="h4" fontWeight={700}>
-              {greeting()}, {user?.full_name || "User"} 👋
-            </Typography>
-
-            <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-              Manage your personal documents, organize important files,
-              and let AI help you find information instantly.
-            </Typography>
-          </Box>
-        </Stack>
+        <Button
+          className="overview-upload-button"
+          component={Link}
+          to="/dashboard/documents"
+          variant="contained"
+          startIcon={<Upload />}
+        >
+          Add documents
+          <ArrowForward className="overview-upload-arrow" />
+        </Button>
+        <Box className="overview-welcome-orbit" aria-hidden="true"><span /><span /></Box>
       </Box>
 
-      {/* Stats */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {stats.map((item) => (
-          <Grid item xs={12} sm={6} lg={3} key={item.title}>
-            <Card
-              sx={{
-                height: "100%",
-                borderRadius: 4,
-                border: "1px solid #E5E7EB",
-                boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Avatar
-                  sx={{
-                    bgcolor: item.bg,
-                    color: item.color,
-                    width: 52,
-                    height: 52,
-                    mb: 2,
-                  }}
-                >
-                  {item.icon}
-                </Avatar>
-
-                <Typography color="text.secondary" variant="body2">
-                  {item.title}
-                </Typography>
-
-                <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }}>
-                  {item.value}
-                </Typography>
-
-                {item.title === "AI Features" && (
-                  <Chip
-                    label="Preview"
-                    size="small"
-                    color="secondary"
-                    sx={{ mt: 1 }}
-                  />
-                )}
-              </CardContent>
+      <Grid container spacing={1.5} className="overview-metrics">
+        {metrics.map((metric, index) => (
+          <Grid item xs={12} sm={4} key={metric.label}>
+            <Card className={`overview-metric overview-metric-${index + 1}`} elevation={0}>
+              <Box className="overview-metric-icon">{metric.icon}</Box>
+              <Box className="overview-metric-copy">
+                <Typography className="overview-metric-label">{metric.label}</Typography>
+                <Box className="overview-metric-value-row">
+                  <Typography className="overview-metric-value">{metric.value}</Typography>
+                </Box>
+              </Box>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Main Content */}
-      <Grid container spacing={3}>
-        {/* Recent Documents */}
-        <Grid item xs={12} lg={8}>
-          <Card
-            sx={{
-              borderRadius: 4,
-              border: "1px solid #E5E7EB",
-              boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-            }}
-          >
-            <Box
-              sx={{
-                p: 3,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderBottom: "1px solid #F1F5F9",
-              }}
-            >
-              <Typography variant="h6" fontWeight={600}>
-                Recent Documents
-              </Typography>
+      <Card className="overview-files-panel" elevation={0}>
+        <Box className="overview-files-heading">
+          <Box>
+            <Typography className="overview-files-kicker">YOUR LIBRARY</Typography>
+            <Typography component="h2" className="overview-files-title">Recently added</Typography>
+          </Box>
+          <Button component={Link} to="/dashboard/documents" className="overview-vault-link">
+            Open vault <ArrowForward />
+          </Button>
+        </Box>
 
-              <Button
-                component={Link}
-                to="/dashboard/documents"
-                endIcon={<ArrowForward />}
-                sx={{ textTransform: "none", fontWeight: 600 }}
-              >
-                View All
-              </Button>
-            </Box>
+        {recentDocuments.length === 0 && !loading ? (
+          <Box className="overview-empty">
+            <Box className="overview-empty-icon"><Description /></Box>
+            <Typography component="h3">Your archive starts here.</Typography>
+            <Typography>Add a document to keep it organized and easy to find.</Typography>
+            <Button component={Link} to="/dashboard/documents" variant="contained" startIcon={<Upload />}>
+              Add your first document
+            </Button>
+          </Box>
+        ) : (
+          <Box className="overview-document-list">
+            {loading
+              ? Array.from({ length: 3 }, (_, index) => (
+                  <Box className="overview-document-row overview-document-loading" key={index}>
+                    <span />
+                    <span />
+                    <span />
+                  </Box>
+                ))
+              : recentDocuments.map((document, index) => (
+                  <Box className="overview-document-row" key={document.id}>
+                    <Box className="overview-document-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </Box>
+                    <Box className="overview-document-type"><Description /></Box>
+                    <Box className="overview-document-main">
+                      <Typography className="overview-document-name" noWrap>
+                        {document.original_name}
+                      </Typography>
+                      <Typography className="overview-document-meta" noWrap>
+                        {document.uploaded_at
+                          ? new Date(document.uploaded_at).toLocaleDateString()
+                          : "Date unavailable"}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      className="overview-document-category"
+                      label={document.ai_category || document.category || "General"}
+                      size="small"
+                    />
+                    <StatusBadge status={document.processing_status} />
+                    <Tooltip title="Open document">
+                      <IconButton
+                        className="overview-document-open"
+                        aria-label={`Open ${document.original_name}`}
+                        onClick={() => handleOpenDocument(document.id)}
+                      >
+                        <Visibility />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                ))}
+          </Box>
+        )}
+      </Card>
 
-            <Box
-              sx={{
-                py: 10,
-                px: 3,
-                textAlign: "center",
-              }}
-            >
-              <Avatar
-                sx={{
-                  width: 88,
-                  height: 88,
-                  mx: "auto",
-                  bgcolor: "#EEF2FF",
-                  color: "#2563EB",
-                }}
-              >
-                <Description sx={{ fontSize: 42 }} />
-              </Avatar>
-
-              <Typography variant="h5" fontWeight={700} sx={{ mt: 3 }}>
-                No Documents Uploaded
-              </Typography>
-
-              <Typography color="text.secondary" sx={{ mt: 1, mb: 4 }}>
-                Upload your first document to start building your secure AI workspace.
-              </Typography>
-
-              <Button
-                component={Link}
-                to="/dashboard/documents"
-                variant="contained"
-                size="large"
-                startIcon={<Upload />}
-                sx={{
-                  borderRadius: 3,
-                  px: 4,
-                  py: 1.3,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  boxShadow: "none",
-                }}
-              >
-                Upload Document
-              </Button>
-            </Box>
-          </Card>
-        </Grid>
-
-        {/* Quick Actions */}
-        <Grid item xs={12} lg={4}>
-          <Stack spacing={3}>
-            <Card
-              sx={{
-                borderRadius: 4,
-                border: "1px solid #E5E7EB",
-                boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-                  Quick Actions
-                </Typography>
-
-                <Button
-                  component={Link}
-                  to="/dashboard/documents"
-                  variant="contained"
-                  fullWidth
-                  startIcon={<Upload />}
-                  sx={{
-                    justifyContent: "space-between",
-                    borderRadius: 3,
-                    py: 1.5,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    boxShadow: "none",
-                  }}
-                >
-                  Upload Document
-                </Button>
-              </CardContent>
-            </Card>
-                        <Card
-              sx={{
-                borderRadius: 4,
-                border: "1px solid #E5E7EB",
-                boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography
-                  variant="h6"
-                  fontWeight={600}
-                  sx={{ mb: 3 }}
-                >
-                  AI Features
-                </Typography>
-
-                <Stack spacing={2}>
-                  <Chip
-                    label="🤖 AI Categorization"
-                    variant="outlined"
-                    sx={{
-                      justifyContent: "flex-start",
-                      borderRadius: 2,
-                      py: 2.5,
-                    }}
-                  />
-
-                  <Chip
-                    label="📄 OCR Text Extraction"
-                    variant="outlined"
-                    sx={{
-                      justifyContent: "flex-start",
-                      borderRadius: 2,
-                      py: 2.5,
-                    }}
-                  />
-
-                  <Chip
-                    label="🔍 Semantic Search"
-                    variant="outlined"
-                    sx={{
-                      justifyContent: "flex-start",
-                      borderRadius: 2,
-                      py: 2.5,
-                    }}
-                  />
-
-                  <Chip
-                    label="📝 AI Summaries"
-                    variant="outlined"
-                    sx={{
-                      justifyContent: "flex-start",
-                      borderRadius: 2,
-                      py: 2.5,
-                    }}
-                  />
-
-                  <Chip
-                    label="⏰ Smart Reminders"
-                    variant="outlined"
-                    sx={{
-                      justifyContent: "flex-start",
-                      borderRadius: 2,
-                      py: 2.5,
-                    }}
-                  />
-                </Stack>
-              </CardContent>
-            </Card>
-
-            <Card
-              sx={{
-                borderRadius: 4,
-                background:
-                  "linear-gradient(135deg,#2563EB,#7C3AED)",
-                color: "white",
-                boxShadow: "0 10px 25px rgba(37,99,235,.25)",
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography
-                  variant="h6"
-                  fontWeight={700}
-                >
-                  LifeHub AI Assistant
-                </Typography>
-
-                <Typography
-                  sx={{
-                    mt: 1,
-                    opacity: .9,
-                    lineHeight: 1.7,
-                  }}
-                >
-                  Your intelligent assistant will soon help
-                  organize documents, answer questions, generate
-                  summaries, extract text, and remind you of
-                  important dates.
-                </Typography>
-
-                <Button
-                  variant="contained"
-                  disabled
-                  sx={{
-                    mt: 3,
-                    bgcolor: "white",
-                    color: "#2563EB",
-                    textTransform: "none",
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    "&.Mui-disabled": {
-                      bgcolor: "rgba(255,255,255,.85)",
-                      color: "#2563EB",
-                    },
-                  }}
-                >
-                  Coming Soon
-                </Button>
-              </CardContent>
-            </Card>
-          </Stack>
-        </Grid>
-      </Grid>
     </Box>
   );
 }

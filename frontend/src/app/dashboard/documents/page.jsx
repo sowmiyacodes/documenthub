@@ -19,16 +19,21 @@ import {
   Grid,
   ToggleButton,
   ToggleButtonGroup,
+  Stack,
+  Chip,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 
 import {
   Upload,
   Search,
   FolderOpen,
-  FilterList,
   GridView,
   TableRows,
   Sort,
+  AutoAwesome,
+  Clear,
 } from "@mui/icons-material";
 
 import UploadDocumentModal from "@/components/documents/UploadDocumentModal";
@@ -42,29 +47,24 @@ import {
 } from "@/services/document";
 
 export default function DocumentsPage() {
-
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
-
   const [sortBy, setSortBy] = useState("newest");
-
   const [viewMode, setViewMode] = useState("grid");
+
   const [semanticResults, setSemanticResults] = useState([]);
   const [semanticLoading, setSemanticLoading] = useState(false);
   const [semanticError, setSemanticError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] =
-    useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const loadDocuments = async () => {
     try {
       setLoading(true);
-
       const response = await getDocuments();
-
       setDocuments(response.documents || []);
     } catch (err) {
       console.error(err);
@@ -80,20 +80,19 @@ export default function DocumentsPage() {
   const handleView = async (id) => {
     try {
       const response = await viewDocument(id);
-
-      window.open(response.url, "_blank");
+      if (response?.url) {
+        window.open(response.url, "_blank");
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this document?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this document?")) return;
 
     try {
       await deleteDocument(id);
-
       loadDocuments();
     } catch (err) {
       console.error(err);
@@ -104,140 +103,127 @@ export default function DocumentsPage() {
     let docs = [...documents];
 
     docs = docs.filter((doc) => {
-      const matchSearch =
-        doc.original_name
-          ?.toLowerCase()
-          .includes(search.toLowerCase());
+      const matchSearch = doc.original_name
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
 
       const matchCategory =
         category === "All" ||
-        doc.category === category;
+        doc.category === category ||
+        doc.ai_category === category;
 
       return matchSearch && matchCategory;
     });
 
     switch (sortBy) {
-
       case "oldest":
         docs.sort(
-          (a, b) =>
-            new Date(a.uploaded_at) -
-            new Date(b.uploaded_at)
+          (a, b) => new Date(a.uploaded_at) - new Date(b.uploaded_at)
         );
         break;
 
       case "name":
         docs.sort((a, b) =>
-          a.original_name.localeCompare(
-            b.original_name
-          )
+          a.original_name.localeCompare(b.original_name)
         );
         break;
 
       case "size":
-        docs.sort(
-          (a, b) =>
-            (b.file_size || 0) -
-            (a.file_size || 0)
-        );
+        docs.sort((a, b) => (b.file_size || 0) - (a.file_size || 0));
         break;
 
       default:
         docs.sort(
-          (a, b) =>
-            new Date(b.uploaded_at) -
-            new Date(a.uploaded_at)
+          (a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at)
         );
     }
 
     return docs;
-
-  }, [
-    documents,
-    search,
-    category,
-    sortBy,
-  ]);
+  }, [documents, search, category, sortBy]);
 
   const handleSemanticSearch = async () => {
-  const query = search.trim();
+    const query = search.trim();
 
-  if (!query) {
+    if (!query) {
+      setHasSearched(false);
+      setSemanticResults([]);
+      setSemanticError("");
+      return;
+    }
+
+    setSemanticLoading(true);
+    setSemanticError("");
+    setHasSearched(true);
+
+    try {
+      const response = await semanticSearch(query);
+
+      if (!response.success) {
+        throw new Error("Semantic search failed.");
+      }
+
+      setSemanticResults(response.results || []);
+    } catch (error) {
+      console.error("Semantic search error:", error);
+      setSemanticResults([]);
+      setSemanticError(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to search documents. Please try again."
+      );
+    } finally {
+      setSemanticLoading(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearch("");
     setHasSearched(false);
     setSemanticResults([]);
     setSemanticError("");
-    return;
-  }
+  };
 
-  setSemanticLoading(true);
-  setSemanticError("");
-  setHasSearched(true);
-
-  try {
-    const response = await semanticSearch(query);
-
-    if (!response.success) {
-      throw new Error("Semantic search failed.");
-    }
-
-    setSemanticResults(response.results || []);
-  } catch (error) {
-    console.error("Semantic search error:", error);
-
-    setSemanticResults([]);
-    setSemanticError(
-      error.response?.data?.message ||
-      error.message ||
-      "Unable to search documents. Please try again."
-    );
-  } finally {
-    setSemanticLoading(false);
-  }
-};
   return (
-  <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: "#f8fafc", minHeight: "100vh" }}>
-
-    {/* ================= HEADER ================= */}
-
-    <Paper
-      elevation={0}
-      sx={{
-        p: 3,
-        mb: 3,
-        borderRadius: 4,
-        border: "1px solid",
-        borderColor: "grey.200",
-        bgcolor: "white",
-      }}
-    >
+    <Box className="dashboard-documents" sx={{ pb: 6 }}>
+      {/* Header Bar */}
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems={{ xs: "flex-start", md: "center" }}
-        flexDirection={{ xs: "column", md: "row" }}
-        gap={3}
+        className="vault-page-heading"
+        sx={{
+          mb: 3.5,
+          p: { xs: 2.5, md: 3 },
+          borderRadius: "0.85rem",
+          bgcolor: "#ffffff",
+          border: "1px solid #e2e8f0",
+          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", md: "center" },
+          gap: 2,
+        }}
       >
-        <Box>
-          <Typography
-            variant="overline"
-            color="primary"
-            fontWeight={700}
-          >
-            AI DOCUMENT VAULT
-          </Typography>
+        <Box className="vault-heading-copy">
+          <Typography className="vault-heading-eyebrow">THE ARCHIVE</Typography>
+          <Box display="flex" alignItems="center" gap={1.25}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em" }}>
+              Your documents
+            </Typography>
+            <Chip
+              label={`${filteredDocuments.length} files`}
+              size="small"
+              sx={{
+                bgcolor: "#eff6ff",
+                color: "#2563eb",
+                fontWeight: 700,
+                fontSize: "0.75rem",
+                borderRadius: "9999px",
+                border: "1px solid #bfdbfe",
+              }}
+            />
+          </Box>
 
-          <Typography
-            variant="h4"
-            fontWeight={800}
-          >
-            My Documents
-          </Typography>
-
-          <Typography
-            color="text.secondary"
-            mt={0.5}
-          >
-            {filteredDocuments.length} of {documents.length} Documents
+          <Typography sx={{ color: "#64748b", fontSize: "0.875rem", mt: 0.5 }}>
+            A clear home for the files you need to keep.
           </Typography>
         </Box>
 
@@ -246,344 +232,353 @@ export default function DocumentsPage() {
           startIcon={<Upload />}
           onClick={() => setIsUploadModalOpen(true)}
           sx={{
-            borderRadius: 3,
-            px: 4,
-            height: 48,
+            borderRadius: "0.65rem",
+            px: 3,
+            py: 1,
             textTransform: "none",
-            fontWeight: 700,
+            fontWeight: 600,
+            bgcolor: "#2563eb",
+            boxShadow: "0 1px 2px rgba(37, 99, 235, 0.2)",
+            "&:hover": {
+              bgcolor: "#1d4ed8",
+              boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
+            },
           }}
         >
           Upload Document
         </Button>
       </Box>
-    </Paper>
 
-    {/* ================= TOOLBAR ================= */}
-
-    <Paper
-      elevation={0}
-      sx={{
-        p: 2.5,
-        mb: 4,
-        borderRadius: 4,
-        border: "1px solid",
-        borderColor: "grey.200",
-      }}
-    >
-      <Grid
-        container
-        spacing={2}
-        alignItems="center"
+      {/* Filter and Toolbar Bar */}
+      <Paper
+        className="vault-toolbar"
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 3.5,
+          borderRadius: "0.85rem",
+          bgcolor: "#ffffff",
+          border: "1px solid #e2e8f0",
+          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+        }}
       >
-        {/* Search */}
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            placeholder="Search documents..."
-            value={search}
-           onChange={(e) => {
-            setSearch(e.target.value);
-            setHasSearched(false);
-            setSemanticResults([]);
-            setSemanticError("");
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSemanticSearch();
-            }
-          }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-                
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button
-                    onClick={handleSemanticSearch}
-                    disabled={semanticLoading || !search.trim()}
-                    sx={{ textTransform: "none" }}
-                  >
-                    {semanticLoading ? "Searching…" : "AI Search"}
-                  </Button>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Grid>
-
-        {/* Category */}
-
-        <Grid item xs={12} sm={6} md={2.5}>
-          <FormControl fullWidth>
-
-            <InputLabel>
-              Category
-            </InputLabel>
-
-            <Select
-              value={category}
-              label="Category"
-              onChange={(e) =>
-                setCategory(e.target.value)
-              }
-            >
-              <MenuItem value="All">All</MenuItem>
-              <MenuItem value="Education">
-                Education
-              </MenuItem>
-              <MenuItem value="Identity">
-                Identity
-              </MenuItem>
-              <MenuItem value="Medical">
-                Medical
-              </MenuItem>
-              <MenuItem value="Financial">
-                Financial
-              </MenuItem>
-              <MenuItem value="Legal">
-                Legal
-              </MenuItem>
-              <MenuItem value="Others">
-                Others
-              </MenuItem>
-            </Select>
-
-          </FormControl>
-        </Grid>
-
-        {/* Sort */}
-
-        <Grid item xs={12} sm={6} md={2.5}>
-          <FormControl fullWidth>
-
-            <InputLabel>
-              Sort
-            </InputLabel>
-
-            <Select
-              value={sortBy}
-              label="Sort"
-              onChange={(e) =>
-                setSortBy(e.target.value)
-              }
-              startAdornment={
-                <Sort sx={{ mr: 1 }} />
-              }
-            >
-              <MenuItem value="newest">
-                Newest
-              </MenuItem>
-
-              <MenuItem value="oldest">
-                Oldest
-              </MenuItem>
-
-              <MenuItem value="name">
-                Name
-              </MenuItem>
-
-              <MenuItem value="size">
-                File Size
-              </MenuItem>
-            </Select>
-
-          </FormControl>
-        </Grid>
-
-        {/* Grid/Table */}
-
-        <Grid item xs={12} md={3}>
-          <Box
-            display="flex"
-            justifyContent={{
-              xs: "flex-start",
-              md: "flex-end",
-            }}
-          >
-            <ToggleButtonGroup
-              value={viewMode}
-              exclusive
-              onChange={(e, value) => {
-                if (value) {
-                  setViewMode(value);
+        <Box className="vault-toolbar-heading">
+          <Typography>Find a document</Typography>
+          <span>Search by name or by meaning</span>
+        </Box>
+        <Grid className="vault-toolbar-grid" container spacing={2} alignItems="center">
+          {/* Search + AI Search Trigger */}
+          <Grid item xs={12} md={5}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search your documents..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                if (!e.target.value) {
+                  setHasSearched(false);
+                  setSemanticResults([]);
+                  setSemanticError("");
                 }
               }}
-            >
-              <ToggleButton value="grid">
-                <GridView sx={{ mr: 1 }} />
-                Grid
-              </ToggleButton>
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSemanticSearch();
+                }
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "0.6rem",
+                  bgcolor: "#f8fafc",
+                  fontSize: "0.875rem",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ fontSize: 19, color: "#64748b" }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {search && (
+                      <IconButton size="small" onClick={handleClearSearch} sx={{ mr: 0.5 }}>
+                        <Clear sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    )}
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={handleSemanticSearch}
+                      disabled={semanticLoading || !search.trim()}
+                      startIcon={<AutoAwesome sx={{ fontSize: 15 }} />}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "0.78rem",
+                        fontWeight: 600,
+                        borderRadius: "0.5rem",
+                        py: 0.4,
+                        px: 1.25,
+                        bgcolor: "#2563eb",
+                        boxShadow: "none",
+                        "&:hover": { bgcolor: "#1d4ed8", boxShadow: "none" },
+                      }}
+                    >
+                      {semanticLoading ? "Searching..." : "AI Search"}
+                    </Button>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
 
-              <ToggleButton value="table">
-                <TableRows sx={{ mr: 1 }} />
-                Table
-              </ToggleButton>
+          {/* Category Filter */}
+          <Grid item xs={6} sm={4} md={2.5}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="category-label">Category</InputLabel>
+              <Select
+                labelId="category-label"
+                value={category}
+                label="Category"
+                onChange={(e) => setCategory(e.target.value)}
+                sx={{ borderRadius: "0.6rem", bgcolor: "#f8fafc", fontSize: "0.875rem" }}
+              >
+                <MenuItem value="All">All Categories</MenuItem>
+                <MenuItem value="Identity">Identity</MenuItem>
+                <MenuItem value="Education">Education</MenuItem>
+                <MenuItem value="Medical">Medical</MenuItem>
+                <MenuItem value="Financial">Financial</MenuItem>
+                <MenuItem value="Legal">Legal</MenuItem>
+                <MenuItem value="Others">Others</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
 
-            </ToggleButtonGroup>
-          </Box>
+          {/* Sort By */}
+          <Grid item xs={6} sm={4} md={2.5}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="sort-label">Sort By</InputLabel>
+              <Select
+                labelId="sort-label"
+                value={sortBy}
+                label="Sort By"
+                onChange={(e) => setSortBy(e.target.value)}
+                sx={{ borderRadius: "0.6rem", bgcolor: "#f8fafc", fontSize: "0.875rem" }}
+              >
+                <MenuItem value="newest">Newest First</MenuItem>
+                <MenuItem value="oldest">Oldest First</MenuItem>
+                <MenuItem value="name">File Name</MenuItem>
+                <MenuItem value="size">File Size</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* View Toggle */}
+          <Grid item xs={12} sm={4} md={2}>
+            <Box display="flex" justifyContent={{ xs: "flex-start", sm: "flex-end" }}>
+              <ToggleButtonGroup
+                size="small"
+                value={viewMode}
+                exclusive
+                onChange={(e, value) => {
+                  if (value) setViewMode(value);
+                }}
+                sx={{
+                  bgcolor: "#f8fafc",
+                  borderRadius: "0.6rem",
+                  "& .MuiToggleButton-root": {
+                    borderRadius: "0.6rem",
+                    border: "1px solid #e2e8f0",
+                    px: 1.5,
+                    py: 0.5,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    fontSize: "0.8rem",
+                    "&.Mui-selected": {
+                      bgcolor: "#2563eb",
+                      color: "#ffffff",
+                      "&:hover": { bgcolor: "#1d4ed8" },
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="grid">
+                  <GridView sx={{ fontSize: 16, mr: 0.5 }} />
+                  Grid
+                </ToggleButton>
+                <ToggleButton value="table">
+                  <TableRows sx={{ fontSize: 16, mr: 0.5 }} />
+                  Table
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          </Grid>
         </Grid>
+      </Paper>
 
-      </Grid>
-    </Paper>
-    {hasSearched && (
-  <Box sx={{ mb: 4 }}>
-    <Typography variant="h6" fontWeight={700} mb={2}>
-      Semantic Search Results
-    </Typography>
+      {/* Semantic Search Results (if triggered) */}
+      {hasSearched && (
+        <Box className="vault-search-results" sx={{ mb: 4 }}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <AutoAwesome sx={{ color: "#2563eb", fontSize: 20 }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#0f172a" }}>
+                AI Semantic Matches
+              </Typography>
+            </Box>
 
-    {semanticLoading && (
-      <Box display="flex" justifyContent="center" py={4}>
-        <CircularProgress />
-      </Box>
-    )}
+            <Button
+              size="small"
+              onClick={handleClearSearch}
+              sx={{ textTransform: "none", fontSize: "0.8rem", color: "#64748b" }}
+            >
+              Clear semantic view
+            </Button>
+          </Box>
 
-    {!semanticLoading && semanticError && (
-      <Typography color="error" sx={{ py: 2 }}>
-        {semanticError}
-      </Typography>
-    )}
+          {semanticLoading && (
+            <Box display="flex" flexDirection="column" alignItems="center" py={6} gap={1.5}>
+              <CircularProgress size={28} thickness={4} />
+              <Typography variant="body2" sx={{ color: "#64748b" }}>
+                Querying pgvector vector similarity...
+              </Typography>
+            </Box>
+          )}
 
-    {!semanticLoading && !semanticError && (
-      <>
-        <Typography color="text.secondary" mb={2}>
-          {semanticResults.length} matching text chunks found
-        </Typography>
+          {!semanticLoading && semanticError && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                borderRadius: "0.75rem",
+                bgcolor: "#fef2f2",
+                border: "1px solid #fecaca",
+                color: "#b91c1c",
+              }}
+            >
+              <Typography variant="body2">{semanticError}</Typography>
+            </Paper>
+          )}
 
-        <SemanticSearchResults
-          results={semanticResults}
-          documents={documents}
-          onView={handleView}
-          query={search}
-        />
-      </>
-    )}
-  </Box>
-)}
-    {/* ================= LOADING ================= */}
+          {!semanticLoading && !semanticError && (
+            <SemanticSearchResults
+              results={semanticResults}
+              documents={documents}
+              onView={handleView}
+              query={search}
+            />
+          )}
+        </Box>
+      )}
 
-    {loading && (
-      <Box
-        display="flex"
-        justifyContent="center"
-        py={8}
-      >
-        <CircularProgress />
-      </Box>
-    )}
+      {/* Loading state */}
+      {loading && (
+        <Box display="flex" flexDirection="column" alignItems="center" py={10} gap={2}>
+          <CircularProgress size={32} thickness={4} />
+          <Typography variant="body2" sx={{ color: "#64748b" }}>
+            Loading vault documents...
+          </Typography>
+        </Box>
+      )}
 
-    {/* ================= EMPTY ================= */}
-
-    {!loading &&
-      !hasSearched &&
-      filteredDocuments.length === 0 && (
-
+      {/* Empty State */}
+      {!loading && !hasSearched && filteredDocuments.length === 0 && (
         <Card
+          elevation={0}
           sx={{
-            borderRadius: 4,
-            py: 8,
+            borderRadius: "0.85rem",
+            border: "1px solid #e2e8f0",
+            py: 10,
+            px: 3,
             textAlign: "center",
+            bgcolor: "#ffffff",
           }}
         >
-          <FolderOpen
+          <Box
             sx={{
-              fontSize: 70,
-              color: "primary.main",
+              width: 68,
+              height: 68,
+              borderRadius: "1.25rem",
+              bgcolor: "#eff6ff",
+              color: "#2563eb",
+              display: "grid",
+              placeItems: "center",
+              mx: "auto",
+              border: "1px solid #dbeafe",
             }}
-          />
-
-          <Typography
-            variant="h5"
-            fontWeight={700}
-            mt={2}
           >
-            No Documents Found
+            <FolderOpen sx={{ fontSize: 34 }} />
+          </Box>
+
+          <Typography variant="h6" sx={{ fontWeight: 800, mt: 2.5, color: "#0f172a" }}>
+            No documents found
           </Typography>
 
-          <Typography
-            color="text.secondary"
-            mt={1}
-            mb={3}
-          >
-            Upload your first document to
-            get started.
+          <Typography sx={{ color: "#64748b", mt: 0.75, mb: 3.5, maxWidth: 440, mx: "auto", fontSize: "0.875rem" }}>
+            {search || category !== "All"
+              ? "No files match your current filters. Try resetting search or selecting All Categories."
+              : "Your vault is currently empty. Upload your first document to extract text and enable AI questions."}
           </Typography>
 
           <Button
             variant="contained"
             startIcon={<Upload />}
-            onClick={() =>
-              setIsUploadModalOpen(true)
-            }
+            onClick={() => setIsUploadModalOpen(true)}
+            sx={{
+              borderRadius: "0.6rem",
+              px: 3.5,
+              py: 1,
+              textTransform: "none",
+              fontWeight: 600,
+              bgcolor: "#2563eb",
+            }}
           >
             Upload Document
           </Button>
         </Card>
       )}
 
-    {/* ================= DOCUMENTS ================= */}
-
-{
-  !loading &&
-  filteredDocuments.length > 0 &&
-  (
-    viewMode === "grid" ? (
-
-      <Grid container spacing={2}>
-
-        {filteredDocuments.map((document) => (
-
-          <Grid
-            item
-            xs={12}
-            sm={6}
-            md={4}
-            lg={3}
-            xl={2.4}
-            key={document.id}
-            display="flex"
-            justifyContent="center"
-          >
-
-            <DocumentCard
-              document={document}
-              onView={handleView}
-              onDelete={handleDelete}
-            />
-
+      {/* Documents Grid / Table View */}
+      {!loading && filteredDocuments.length > 0 && (
+        viewMode === "grid" ? (
+          <Grid className="vault-document-grid" container spacing={2.5}>
+            {filteredDocuments.map((doc) => (
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
+                key={doc.id}
+                display="flex"
+              >
+                <DocumentCard
+                  document={doc}
+                  onView={handleView}
+                  onDelete={handleDelete}
+                />
+              </Grid>
+            ))}
           </Grid>
+        ) : (
+          <DocumentTable
+            documents={filteredDocuments}
+            onView={handleView}
+            onDelete={handleDelete}
+          />
+        )
+      )}
 
-        ))}
-
-      </Grid>
-
-    ) : (
-
-      <DocumentTable
-        documents={filteredDocuments}
-        onView={handleView}
-        onDelete={handleDelete}
+      {/* Upload Modal */}
+      <UploadDocumentModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadSuccess={() => {
+          setIsUploadModalOpen(false);
+          loadDocuments();
+        }}
       />
-
-    )
-  )
+    </Box>
+  );
 }
-
-{/* ================= UPLOAD MODAL ================= */}
-
-<UploadDocumentModal
-  isOpen={isUploadModalOpen}
-  onClose={() => setIsUploadModalOpen(false)}
-  onUploadSuccess={() => {
-    setIsUploadModalOpen(false);
-    loadDocuments();
-  }}
-/>
-
-</Box>
-);
-}
-

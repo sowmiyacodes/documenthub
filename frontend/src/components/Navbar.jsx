@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowUpRight, Orbit } from "lucide-react";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
 
@@ -10,54 +11,30 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-lg">
-        <div className="container-width flex h-20 items-center justify-between">
-          {/* Logo */}
+      <header className="studio-nav">
+        <div className="studio-container studio-nav-inner">
+          <a className="studio-brand" href="#hero" aria-label="DocumentHub home">
+            <span className="studio-brand-mark"><Orbit size={21} strokeWidth={1.8} /></span>
+            <span className="studio-brand-name">document<span>hub</span></span>
+          </a>
 
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl font-bold text-white">
-              L
-            </div>
-
-            <div>
-              <h1 className="text-xl font-bold">LifeHub AI</h1>
-
-              <p className="text-xs text-slate-500">
-                Personal Digital Management
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-
-          <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
-            <a href="#">Home</a>
-            <a href="#features">Features</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+          <nav className="studio-nav-links" aria-label="Main navigation">
+            <a href="#hero">The idea</a>
+            <a href="#features">What it does</a>
+            <a href="#workflow">How it works</a>
+            <a href="#security">Privacy</a>
           </nav>
 
-          {/* Buttons */}
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setLoginOpen(true)}
-              className="secondary-btn"
-            >
-              Login
+          <div className="studio-nav-actions">
+            <button className="studio-text-button" onClick={() => setLoginOpen(true)}>
+              Sign in
             </button>
-
-            <button
-              onClick={() => setRegisterOpen(true)}
-              className="primary-btn"
-            >
-              Register
+            <button className="studio-dark-button studio-nav-cta" onClick={() => setRegisterOpen(true)}>
+              Start organizing <ArrowUpRight size={16} />
             </button>
           </div>
         </div>
       </header>
-
-      {/* Login Modal */}
 
       <LoginModal
         isOpen={loginOpen}
@@ -67,9 +44,6 @@ export default function Navbar() {
           setRegisterOpen(true);
         }}
       />
-
-      {/* Register Modal */}
-
       <RegisterModal
         isOpen={registerOpen}
         onClose={() => setRegisterOpen(false)}

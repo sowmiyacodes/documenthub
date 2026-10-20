@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -15,11 +14,10 @@ import {
   Description,
   OpenInNew,
   SearchOff,
+  AutoAwesome,
 } from "@mui/icons-material";
 
 // Initial semantic relevance threshold.
-// Document-type filtering below handles cases where
-// similarity scores alone rank the wrong document first.
 const MIN_SIMILARITY = 0.10;
 
 const getDocumentId = (result) =>
@@ -45,7 +43,6 @@ const getSimilarity = (result) => {
   }
 
   const score = Number(value);
-
   return Number.isFinite(score) ? score : null;
 };
 
@@ -116,7 +113,6 @@ const educationTerms = [
 
 const isResumeDocument = (document) => {
   const name = normalize(document.original_name);
-
   return (
     /\bresume\b/.test(name) ||
     /\bcv\b/.test(name) ||
@@ -130,7 +126,6 @@ const matchesDocumentIntent = ({
   excerpt,
 }) => {
   const q = normalize(query);
-
   const name = normalize(document.original_name);
   const category = normalize(document.ai_category);
   const manualCategory = normalize(document.category);
@@ -145,8 +140,6 @@ const matchesDocumentIntent = ({
     content,
   ].join(" ");
 
-  // A government-document query should not return a resume
-  // just because its embedding happens to score highly.
   const asksForGovernmentDocument =
     containsAny(q, governmentTerms) ||
     (
@@ -158,9 +151,6 @@ const matchesDocumentIntent = ({
     if (isResumeDocument(document)) {
       return false;
     }
-
-    // Require evidence that the document is actually
-    // a government-issued ID or related official record.
     return containsAny(combined, governmentDocumentEvidence);
   }
 
@@ -187,7 +177,6 @@ const matchesDocumentIntent = ({
     if (isResumeDocument(document)) {
       return false;
     }
-
     return (
       containsAny(combined, [
         "certificate",
@@ -203,7 +192,6 @@ const matchesDocumentIntent = ({
     );
   }
 
-  // For ordinary queries, don't enforce a document type.
   return true;
 };
 
@@ -215,23 +203,14 @@ export default function SemanticSearchResults({
 }) {
   const groupedResults = new Map();
 
-  // Filter weak chunks and group the remaining chunks
-  // by their parent document.
   for (const result of results) {
     const similarity = getSimilarity(result);
-
-    if (
-      similarity === null ||
-      similarity < MIN_SIMILARITY
-    ) {
+    if (similarity === null || similarity < MIN_SIMILARITY) {
       continue;
     }
 
     const documentId = getDocumentId(result);
-
-    if (!documentId) {
-      continue;
-    }
+    if (!documentId) continue;
 
     const key = String(documentId);
     const excerpt = getChunkText(result);
@@ -251,14 +230,11 @@ export default function SemanticSearchResults({
     }
   }
 
-  // Match each result to its document metadata.
   const matches = Array.from(groupedResults.values())
     .map((result) => {
       const document = documents.find(
-        (item) =>
-          String(item.id) === String(result.documentId)
+        (item) => String(item.id) === String(result.documentId)
       );
-
       return {
         ...result,
         document,
@@ -279,27 +255,20 @@ export default function SemanticSearchResults({
       <Card
         elevation={0}
         sx={{
-          border: "1px solid",
-          borderColor: "grey.200",
-          borderRadius: 4,
+          border: "1px solid #e2e8f0",
+          borderRadius: "0.85rem",
           py: 6,
-          px: 2,
+          px: 3,
           textAlign: "center",
+          bgcolor: "#ffffff",
         }}
       >
-        <SearchOff
-          sx={{
-            fontSize: 52,
-            color: "text.secondary",
-          }}
-        />
-
-        <Typography variant="h6" fontWeight={700} mt={2}>
-          No relevant documents found
+        <SearchOff sx={{ fontSize: 44, color: "#94a3b8" }} />
+        <Typography variant="h6" sx={{ fontWeight: 700, mt: 1.5, color: "#0f172a" }}>
+          No vector matches for "{query}"
         </Typography>
-
-        <Typography color="text.secondary" mt={1}>
-          Try a different query or a more specific document type.
+        <Typography sx={{ color: "#64748b", mt: 0.5, fontSize: "0.875rem" }}>
+          Try using different keywords, phrasing your question in full natural language, or searching for key identifiers.
         </Typography>
       </Card>
     );
@@ -309,119 +278,154 @@ export default function SemanticSearchResults({
     <Stack spacing={2}>
       {matches.map((result) => {
         const document = result.document;
-
         const category =
           document.ai_category ||
           document.category ||
           "Uncategorized";
+
+        const percent = Math.round(result.similarity * 100);
 
         return (
           <Card
             key={String(result.documentId)}
             elevation={0}
             sx={{
-              border: "1px solid",
-              borderColor: "grey.200",
-              borderRadius: 3,
-              transition: "border-color 0.2s",
+              border: "1px solid #e2e8f0",
+              borderRadius: "0.85rem",
+              bgcolor: "#ffffff",
+              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              transition: "all 0.15s ease",
               "&:hover": {
-                borderColor: "primary.main",
+                borderColor: "#bfdbfe",
+                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.08)",
               },
             }}
           >
             <CardContent sx={{ p: 2.5 }}>
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                justifyContent="space-between"
-                alignItems={{ xs: "flex-start", sm: "center" }}
-                spacing={2}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  justifyContent: "space-between",
+                  alignItems: { xs: "flex-start", sm: "center" },
+                  gap: 2,
+                }}
               >
-                <Stack
-                  direction="row"
-                  spacing={1.5}
-                  alignItems="flex-start"
-                  sx={{ minWidth: 0, flex: 1 }}
-                >
-                  <Description
-                    color="primary"
-                    sx={{ fontSize: 32, mt: 0.25 }}
-                  />
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "0.5rem",
+                      bgcolor: "#eff6ff",
+                      color: "#2563eb",
+                      display: "grid",
+                      placeItems: "center",
+                      border: "1px solid #dbeafe",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Description sx={{ fontSize: 22 }} />
+                  </Box>
 
                   <Box sx={{ minWidth: 0 }}>
                     <Typography
-                      variant="subtitle1"
-                      fontWeight={700}
-                      sx={{ overflowWrap: "anywhere" }}
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: "0.95rem",
+                        color: "#0f172a",
+                        overflowWrap: "anywhere",
+                      }}
                     >
-                      {document.original_name ||
-                        "Untitled document"}
+                      {document.original_name || "Untitled document"}
                     </Typography>
 
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      flexWrap="wrap"
-                      useFlexGap
-                      mt={1}
-                    >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, flexWrap: "wrap" }}>
                       <Chip
                         size="small"
                         label={category}
-                        variant="outlined"
+                        sx={{
+                          height: 20,
+                          fontSize: "0.7rem",
+                          fontWeight: 600,
+                          bgcolor: "#f1f5f9",
+                        }}
                       />
 
                       <Chip
                         size="small"
-                        label={`Similarity: ${result.similarity.toFixed(3)}`}
-                        variant="outlined"
+                        icon={<AutoAwesome sx={{ fontSize: "13px !important", color: "#2563eb" }} />}
+                        label={`${percent}% Relevance`}
+                        sx={{
+                          height: 20,
+                          fontSize: "0.7rem",
+                          fontWeight: 700,
+                          bgcolor: "#eff6ff",
+                          color: percent >= 70 ? "#166534" : "#1d4ed8",
+                          border: "1px solid",
+                          borderColor: "#bfdbfe",
+                        }}
                       />
-                    </Stack>
+                    </Box>
                   </Box>
-                </Stack>
+                </Box>
 
                 <Button
                   variant="outlined"
-                  startIcon={<OpenInNew />}
+                  size="small"
+                  endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
                   onClick={() => onView?.(document.id)}
                   sx={{
                     flexShrink: 0,
                     textTransform: "none",
-                    borderRadius: 2,
+                    borderRadius: "0.5rem",
+                    fontWeight: 600,
+                    fontSize: "0.8rem",
+                    borderColor: "#cbd5e1",
+                    color: "#0f172a",
+                    "&:hover": { borderColor: "#2563eb", bgcolor: "#eff6ff" },
                   }}
                 >
-                  Open document
+                  Open Document
                 </Button>
-              </Stack>
+              </Box>
 
               {result.excerpt && (
                 <Box
                   sx={{
                     mt: 2,
-                    p: 2,
-                    bgcolor: "grey.50",
-                    borderRadius: 2,
+                    p: 1.75,
+                    bgcolor: "#f8fafc",
+                    borderRadius: "0.6rem",
+                    borderLeft: "3px solid #2563eb",
+                    border: "1px solid #f1f5f9",
                   }}
                 >
                   <Typography
                     variant="caption"
-                    color="text.secondary"
-                    fontWeight={700}
+                    sx={{
+                      color: "#64748b",
+                      fontWeight: 700,
+                      letterSpacing: "0.04em",
+                      fontSize: "0.7rem",
+                      display: "block",
+                      mb: 0.5,
+                    }}
                   >
-                    MATCHING EXCERPT
+                    MATCHING CHUNK EVIDENCE
                   </Typography>
 
                   <Typography
                     variant="body2"
-                    color="text.secondary"
                     sx={{
-                      mt: 0.5,
+                      color: "#334155",
+                      fontSize: "0.85rem",
+                      lineHeight: 1.6,
                       whiteSpace: "pre-wrap",
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {result.excerpt.length > 500
-                      ? `${result.excerpt.slice(0, 500)}…`
-                      : result.excerpt}
+                    "{result.excerpt.length > 400 ? `${result.excerpt.slice(0, 400)}…` : result.excerpt}"
                   </Typography>
                 </Box>
               )}

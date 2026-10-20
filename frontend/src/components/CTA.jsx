@@ -1,30 +1,38 @@
 "use client";
 
+import { useState } from "react";
+import { ArrowUpRight, LockKeyhole, Sparkles } from "lucide-react";
+import RegisterModal from "./RegisterModal";
+
 export default function CTA() {
+  const [registerOpen, setRegisterOpen] = useState(false);
+
   return (
-    <section className="section-padding">
-
-      <div className="container-width">
-
-        <div className="rounded-[30px] bg-blue-600 px-8 py-20 text-center text-white">
-
-          <h2 className="text-4xl font-bold">
-            Ready to Organize Your Digital Life?
-          </h2>
-
-          <p className="mt-5 text-blue-100">
-            Start managing your documents, expenses,
-            notes and reminders with AI today.
-          </p>
-
-          <button className="mt-8 rounded-xl bg-white px-7 py-3 font-semibold text-blue-600 transition hover:scale-105">
-            Create Free Account
-          </button>
-
+    <>
+      <section id="security" className="studio-cta-section">
+        <div className="studio-container">
+          <div className="studio-cta">
+            <div className="studio-cta-decoration" aria-hidden="true">
+              <span /><span /><span /><span /><span />
+            </div>
+            <div className="studio-cta-copy">
+              <div className="studio-eyebrow studio-eyebrow-light"><span /> READY WHEN YOU ARE</div>
+              <h2>A little less<br /><em>life admin.</em></h2>
+              <p>Start with the files you have. Make room for a more organized tomorrow.</p>
+              <button className="studio-accent-button" onClick={() => setRegisterOpen(true)}>
+                Create your free account <ArrowUpRight size={18} />
+              </button>
+              <div className="studio-cta-privacy"><LockKeyhole size={14} /> Your documents stay yours.</div>
+            </div>
+            <div className="studio-cta-side-note">
+              <Sparkles size={18} />
+              <span>One home for<br />the important stuff.</span>
+              <small>DOCUMENTHUB / 001</small>
+            </div>
+          </div>
         </div>
-
-      </div>
-
-    </section>
+      </section>
+      <RegisterModal isOpen={registerOpen} onClose={() => setRegisterOpen(false)} />
+    </>
   );
 }

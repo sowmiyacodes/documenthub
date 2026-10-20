@@ -1,29 +1,24 @@
 "use client";
 
+import { ArrowUpRight, Orbit } from "lucide-react";
+
 export default function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
-
-      <div className="container-width flex flex-col items-center justify-between gap-5 py-8 md:flex-row">
-
-        <div>
-
-          <h3 className="text-xl font-bold">
-            LifeHub AI
-          </h3>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Intelligent Personal Digital Management System
-          </p>
-
+    <footer className="studio-footer">
+      <div className="studio-container">
+        <div className="studio-footer-main">
+          <a className="studio-brand studio-footer-brand" href="#hero">
+            <span className="studio-brand-mark"><Orbit size={20} strokeWidth={1.8} /></span>
+            <span className="studio-brand-name">document<span>hub</span></span>
+          </a>
+          <p>A more thoughtful home for your documents.</p>
+          <a className="studio-back-top" href="#hero">BACK TO TOP <ArrowUpRight size={14} /></a>
         </div>
-
-        <p className="text-sm text-slate-500">
-          © 2026 LifeHub AI. All rights reserved.
-        </p>
-
+        <div className="studio-footer-bottom">
+          <span>© {new Date().getFullYear()} DocumentHub. Made for the stuff that matters.</span>
+          <div><a href="#features">Explore</a><a href="#security">Privacy</a></div>
+        </div>
       </div>
-
     </footer>
   );
 }

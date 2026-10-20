@@ -1,53 +1,88 @@
-import Chip from "@mui/material/Chip";
-import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import ErrorRoundedIcon from "@mui/icons-material/ErrorRounded";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
-const StatusBadge = ({ status }) => {
-    switch (status) {
-        case "completed":
-            return (
-                <Chip
-                    icon={<CheckCircleRoundedIcon />}
-                    label="Completed"
-                    color="success"
-                    variant="filled"
-                    size="small"
-                />
-            );
+export default function StatusBadge({ status }) {
+  const normalized = (status || "pending").toLowerCase();
 
-        case "processing":
-            return (
-                <Chip
-                    icon={<AutorenewRoundedIcon />}
-                    label="Processing"
-                    color="warning"
-                    variant="filled"
-                    size="small"
-                />
-            );
+  const configs = {
+    completed: {
+      label: "Completed",
+      dotClass: "bg-blue-500",
+      pillStyle: {
+        bgcolor: "#eff6ff",
+        color: "#1d4ed8",
+        borderColor: "#bfdbfe",
+      },
+    },
+    processing: {
+      label: "Processing",
+      dotClass: "bg-blue-500 animate-pulse",
+      pillStyle: {
+        bgcolor: "#eff6ff",
+        color: "#1d4ed8",
+        borderColor: "#bfdbfe",
+      },
+    },
+    failed: {
+      label: "Failed",
+      dotClass: "bg-rose-500",
+      pillStyle: {
+        bgcolor: "#fef2f2",
+        color: "#991b1b",
+        borderColor: "#fecaca",
+      },
+    },
+    pending: {
+      label: "Pending",
+      dotClass: "bg-slate-400",
+      pillStyle: {
+        bgcolor: "#f8fafc",
+        color: "#475569",
+        borderColor: "#e2e8f0",
+      },
+    },
+  };
 
-        case "failed":
-            return (
-                <Chip
-                    icon={<ErrorRoundedIcon />}
-                    label="Failed"
-                    color="error"
-                    variant="filled"
-                    size="small"
-                />
-            );
+  const current = configs[normalized] || configs.pending;
 
-        default:
-            return (
-                <Chip
-                    label="Pending"
-                    color="default"
-                    variant="outlined"
-                    size="small"
-                />
-            );
-    }
-};
-
-export default StatusBadge;
+  return (
+    <Box
+      className="workspace-status-badge"
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 0.75,
+        px: 1.2,
+        py: 0.35,
+        borderRadius: "9999px",
+        border: "1px solid",
+        fontSize: "0.75rem",
+        fontWeight: 600,
+        letterSpacing: "0.01em",
+        transition: "all 0.15s ease",
+        ...current.pillStyle,
+      }}
+    >
+      <Box
+        component="span"
+        className={current.dotClass}
+        sx={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          display: "inline-block",
+        }}
+      />
+      <Typography
+        component="span"
+        sx={{
+          fontSize: "inherit",
+          fontWeight: "inherit",
+          lineHeight: 1,
+        }}
+      >
+        {current.label}
+      </Typography>
+    </Box>
+  );
+}

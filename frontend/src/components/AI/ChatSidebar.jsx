@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Box,
@@ -19,6 +18,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 
 export default function ChatSidebar({
   conversations = [],
@@ -54,62 +55,94 @@ export default function ChatSidebar({
 
   return (
     <Box
+      className="assistant-history-sidebar"
       sx={{
-        width: { xs: 245, md: 285 },
+        width: { xs: 260, md: 290 },
         flexShrink: 0,
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#F8FAFC",
-        borderRight: "1px solid #E2E8F0",
+        bgcolor: "#f8fafc",
+        borderRight: "1px solid #e2e8f0",
       }}
     >
-      <Box sx={{ p: 2.5 }}>
-        <Typography
-          variant="h6"
-          fontWeight={800}
-          color="#0F172A"
-          mb={2}
-        >
-          LifeHub AI
-        </Typography>
+      {/* Top Header */}
+      <Box sx={{ p: 2.2, borderBottom: "1px solid #f1f5f9" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2 }}>
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              borderRadius: "0.6rem",
+              background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+              display: "grid",
+              placeItems: "center",
+              color: "#fff",
+              boxShadow: "0 2px 6px rgba(37, 99, 235, 0.25)",
+            }}
+          >
+            <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
+              DocumentHub AI
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem" }}>
+              Intelligent Assistant
+            </Typography>
+          </Box>
+        </Box>
 
+        {/* New Chat Button */}
         <Button
           fullWidth
           variant="contained"
-          startIcon={<AddRoundedIcon />}
+          startIcon={<AddRoundedIcon sx={{ fontSize: 20 }} />}
           onClick={onNewChat}
           sx={{
             textTransform: "none",
-            justifyContent: "flex-start",
-            borderRadius: 2.5,
-            py: 1.3,
-            boxShadow: "none",
-            bgcolor: "#2563EB",
-            "&:hover": { bgcolor: "#1D4ED8", boxShadow: "none" },
+            fontWeight: 600,
+            fontSize: "0.875rem",
+            borderRadius: "0.65rem",
+            py: 1,
+            boxShadow: "0 1px 2px rgba(37, 99, 235, 0.2)",
+            bgcolor: "#2563eb",
+            "&:hover": {
+              bgcolor: "#1d4ed8",
+              boxShadow: "0 4px 10px rgba(37, 99, 235, 0.25)",
+            },
           }}
         >
-          New chat
+          New conversation
         </Button>
 
+        {/* Search */}
         <TextField
           fullWidth
           size="small"
-          placeholder="Search conversations"
+          placeholder="Filter conversations..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{
-            mt: 2,
+            mt: 1.5,
             "& .MuiOutlinedInput-root": {
-              borderRadius: 2.5,
-              bgcolor: "#fff",
+              borderRadius: "0.6rem",
+              bgcolor: "#ffffff",
+              fontSize: "0.85rem",
+              borderColor: "#e2e8f0",
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#cbd5e1",
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#2563eb",
+              },
             },
           }}
           slotProps={{
             input: {
               startAdornment: (
                 <SearchRoundedIcon
-                  sx={{ color: "#94A3B8", mr: 1, fontSize: 20 }}
+                  sx={{ color: "#64748b", mr: 1, fontSize: 18 }}
                 />
               ),
             },
@@ -117,26 +150,29 @@ export default function ChatSidebar({
         />
       </Box>
 
-      <Box sx={{ px: 2, pb: 1 }}>
+      {/* History Section Label */}
+      <Box sx={{ px: 2.2, pt: 2, pb: 0.75 }}>
         <Typography
           variant="caption"
-          fontWeight={700}
-          color="#94A3B8"
-          sx={{ letterSpacing: 1 }}
+          sx={{
+            fontWeight: 700,
+            color: "#475569",
+            letterSpacing: "0.06em",
+            fontSize: "0.7rem",
+          }}
         >
-          RECENT CHATS
+          CHATS ({filtered.length})
         </Typography>
       </Box>
 
+      {/* Conversations List */}
       <Box sx={{ flex: 1, overflowY: "auto", px: 1.5, pb: 2 }}>
         {filtered.length === 0 ? (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ p: 2 }}
-          >
-            {loading ? "Loading conversations..." : "No conversations found."}
-          </Typography>
+          <Box sx={{ p: 2, textAlign: "center" }}>
+            <Typography variant="body2" sx={{ color: "#475569", fontSize: "0.825rem" }}>
+              {loading ? "Loading conversations..." : "No conversation history"}
+            </Typography>
+          </Box>
         ) : (
           <List disablePadding>
             {filtered.map((chat) => {
@@ -151,20 +187,32 @@ export default function ChatSidebar({
                     if (!editing) onSelectChat(chat.id);
                   }}
                   sx={{
-                    borderRadius: 2.5,
+                    borderRadius: "0.65rem",
                     mb: 0.5,
-                    alignItems: "flex-start",
-                    bgcolor: active ? "#DBEAFE" : "transparent",
-                    "&.Mui-selected": { bgcolor: "#DBEAFE" },
-                    "&.Mui-selected:hover": { bgcolor: "#BFDBFE" },
+                    px: 1.5,
+                    py: 1,
+                    alignItems: "center",
+                    bgcolor: active ? "#eff6ff" : "transparent",
+                    border: "1px solid",
+                    borderColor: active ? "#bfdbfe" : "transparent",
+                    transition: "all 0.15s ease",
+                    "&:hover": {
+                      bgcolor: active ? "#eff6ff" : "#f1f5f9",
+                    },
+                    "&.Mui-selected": {
+                      bgcolor: "#eff6ff",
+                    },
+                    "&.Mui-selected:hover": {
+                      bgcolor: "#dbeafe",
+                    },
                   }}
                 >
                   <ChatBubbleOutlineRoundedIcon
                     sx={{
-                      mr: 1.2,
-                      mt: 0.5,
-                      fontSize: 19,
-                      color: active ? "#2563EB" : "#64748B",
+                      mr: 1.25,
+                      fontSize: 17,
+                      color: active ? "#2563eb" : "#64748b",
+                      flexShrink: 0,
                     }}
                   />
 
@@ -184,27 +232,35 @@ export default function ChatSidebar({
                           if (e.key === "Escape") setEditingId(null);
                         }}
                         onClick={(e) => e.stopPropagation()}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            fontSize: "0.825rem",
+                            py: 0,
+                            bgcolor: "#ffffff",
+                          },
+                        }}
                       />
                     ) : (
                       <ListItemText
                         primary={chat.title || "New chat"}
                         primaryTypographyProps={{
-                          fontSize: 13.5,
+                          fontSize: "0.84rem",
                           fontWeight: active ? 700 : 500,
                           noWrap: true,
-                          color: "#334155",
+                          color: active ? "#1e40af" : "#334155",
                         }}
                       />
                     )}
 
                     {editing ? (
-                      <Box display="flex" justifyContent="flex-end">
+                      <Box display="flex" justifyContent="flex-end" mt={0.5} gap={0.5}>
                         <IconButton
                           size="small"
                           onClick={(e) => {
                             e.stopPropagation();
                             saveRename();
                           }}
+                          sx={{ p: 0.3, color: "#2563eb" }}
                         >
                           <CheckRoundedIcon fontSize="small" />
                         </IconButton>
@@ -214,6 +270,7 @@ export default function ChatSidebar({
                             e.stopPropagation();
                             setEditingId(null);
                           }}
+                          sx={{ p: 0.3, color: "#94a3b8" }}
                         >
                           <CloseRoundedIcon fontSize="small" />
                         </IconButton>
@@ -222,31 +279,37 @@ export default function ChatSidebar({
                       <Box
                         display="flex"
                         justifyContent="flex-end"
-                        sx={{ opacity: active ? 1 : 0.65 }}
+                        sx={{
+                          opacity: active ? 1 : 0,
+                          transition: "opacity 0.15s ease",
+                          ".MuiListItemButton-root:hover &": {
+                            opacity: 1,
+                          },
+                        }}
                       >
-                        <Tooltip title="Rename chat">
+                        <Tooltip title="Rename">
                           <IconButton
                             size="small"
                             onClick={(e) => {
                               e.stopPropagation();
                               startRename(chat);
                             }}
+                            sx={{ p: 0.4, color: "#64748b", "&:hover": { color: "#2563eb" } }}
                           >
-                            <EditOutlinedIcon sx={{ fontSize: 16 }} />
+                            <EditOutlinedIcon sx={{ fontSize: 14 }} />
                           </IconButton>
                         </Tooltip>
 
-                        <Tooltip title="Delete chat">
+                        <Tooltip title="Delete">
                           <IconButton
                             size="small"
                             onClick={(e) => {
                               e.stopPropagation();
                               onDeleteChat(chat.id);
                             }}
+                            sx={{ p: 0.4, color: "#64748b", "&:hover": { color: "#ef4444" } }}
                           >
-                            <DeleteOutlineRoundedIcon
-                              sx={{ fontSize: 17 }}
-                            />
+                            <DeleteOutlineRoundedIcon sx={{ fontSize: 15 }} />
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -259,9 +322,20 @@ export default function ChatSidebar({
         )}
       </Box>
 
-      <Box sx={{ p: 2, borderTop: "1px solid #E2E8F0" }}>
-        <Typography variant="caption" color="text.secondary">
-          Your personal document assistant
+      {/* Footer Info */}
+      <Box
+        sx={{
+          p: 1.75,
+          borderTop: "1px solid #e2e8f0",
+          bgcolor: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <ShieldOutlinedIcon sx={{ fontSize: 16, color: "#2563eb" }} />
+        <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", fontWeight: 500 }}>
+          End-to-end private AI vault
         </Typography>
       </Box>
     </Box>

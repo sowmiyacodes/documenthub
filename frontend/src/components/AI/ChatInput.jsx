@@ -1,6 +1,4 @@
-
 import { useRef, useState } from "react";
-
 import {
   Box,
   TextField,
@@ -10,7 +8,8 @@ import {
   Tooltip,
 } from "@mui/material";
 
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import ArrowUpwardRoundedIcon from "@mui/icons-material/ArrowUpwardRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
 export default function ChatInput({
   onSend,
@@ -54,20 +53,23 @@ export default function ChatInput({
   };
 
   return (
-    <Box sx={{ width: "100%", maxWidth: 850, mx: "auto" }}>
+    <Box className="assistant-chat-input" sx={{ width: "100%", maxWidth: 860, mx: "auto" }}>
       <Box
         sx={{
+          position: "relative",
           display: "flex",
           alignItems: "flex-end",
           gap: 1,
-          p: 1,
-          border: "1px solid #CBD5E1",
-          borderRadius: 4,
-          bgcolor: "#fff",
-          boxShadow: "0 4px 20px rgba(15,23,42,0.05)",
-          transition: "border-color 0.2s ease",
+          p: 1.2,
+          border: "1px solid",
+          borderColor: "#cbd5e1",
+          borderRadius: "1.25rem",
+          bgcolor: "#ffffff",
+          boxShadow: "0 2px 10px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03)",
+          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
           "&:focus-within": {
-            borderColor: "#2563EB",
+            borderColor: "#2563eb",
+            boxShadow: "0 0 0 3px rgba(37, 99, 235, 0.12), 0 4px 14px rgba(15, 23, 42, 0.06)",
           },
         }}
       >
@@ -86,58 +88,92 @@ export default function ChatInput({
             input: {
               disableUnderline: true,
               sx: {
-                px: 1.5,
-                py: 1,
-                fontSize: 15,
+                px: 1.75,
+                py: 1.1,
+                fontSize: "0.935rem",
                 lineHeight: 1.6,
+                color: "#0f172a",
                 overflowWrap: "anywhere",
+                "&::placeholder": {
+                  color: "#64748b",
+                  opacity: 1,
+                },
               },
             },
           }}
         />
 
-        <Tooltip title={loading ? "Sending..." : "Send message"}>
+        <Tooltip title={loading ? "Generating response..." : canSend ? "Send message (Enter)" : "Type a message"}>
           <span>
             <IconButton
               aria-label="Send message"
               onClick={handleSubmit}
               disabled={!canSend}
               sx={{
-                width: 44,
-                height: 44,
+                width: 42,
+                height: 42,
                 flexShrink: 0,
-                borderRadius: 3,
-                bgcolor: "#2563EB",
-                color: "#fff",
+                borderRadius: "0.85rem",
+                bgcolor: "#2563eb",
+                color: "#ffffff",
+                boxShadow: canSend ? "0 2px 8px rgba(37, 99, 235, 0.35)" : "none",
+                transition: "all 0.15s ease",
                 "&:hover": {
-                  bgcolor: "#1D4ED8",
+                  bgcolor: "#1d4ed8",
+                  transform: "translateY(-1px)",
                 },
                 "&.Mui-disabled": {
-                  bgcolor: "#E2E8F0",
-                  color: "#94A3B8",
+                  bgcolor: "#f1f5f9",
+                  color: "#94a3b8",
                 },
               }}
             >
               {loading ? (
-                <CircularProgress size={21} color="inherit" />
+                <CircularProgress size={19} color="inherit" thickness={4} />
               ) : (
-                <SendRoundedIcon />
+                <ArrowUpwardRoundedIcon sx={{ fontSize: 22 }} />
               )}
             </IconButton>
           </span>
         </Tooltip>
       </Box>
 
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        textAlign="center"
-        display="block"
-        sx={{ mt: 1.25 }}
+      {/* Helpful footnote */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 1,
+          px: 1.5,
+          mt: 1.2,
+        }}
       >
-        AI-generated responses may be inaccurate. Verify important details
-        against your documents.
-      </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+          <AutoAwesomeRoundedIcon sx={{ fontSize: 13, color: "#2563eb" }} />
+          <Typography
+            variant="caption"
+            sx={{
+              color: "#64748b",
+              fontSize: "0.74rem",
+              fontWeight: 500,
+            }}
+          >
+            Answers grounded in your documents
+          </Typography>
+        </Box>
+
+        <Typography
+          variant="caption"
+          sx={{
+            color: "#475569",
+            fontSize: "0.72rem",
+          }}
+        >
+          Enter ↵ to send • Shift + Enter for new line
+        </Typography>
+      </Box>
     </Box>
   );
 }

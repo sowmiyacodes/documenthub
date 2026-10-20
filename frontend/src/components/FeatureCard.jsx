@@ -1,25 +1,18 @@
 "use client";
 
-export default function FeatureCard({
-  icon,
-  title,
-  description,
-}) {
+import { ArrowUpRight } from "lucide-react";
+
+export default function FeatureCard({ icon, number, badge, title, description }) {
   return (
-    <div className="card p-8 text-center">
-
-      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-        {icon}
+    <article className="studio-feature-card">
+      <div className="studio-feature-card-top">
+        <span className="studio-feature-icon">{icon}</span>
+        <span className="studio-feature-number">{number}</span>
       </div>
-
-      <h3 className="text-xl font-semibold">
-        {title}
-      </h3>
-
-      <p className="mt-4 text-slate-600">
-        {description}
-      </p>
-
-    </div>
+      <span className="studio-feature-badge">{badge}</span>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <span className="studio-feature-arrow" aria-hidden="true"><ArrowUpRight size={17} /></span>
+    </article>
   );
 }
