@@ -8,6 +8,7 @@ const entityService = require("../services/entity.service");
 const summaryService = require("../services/summary.service");
 const embeddingService = require("../services/embedding.service");
 const vectorService = require("../services/vector.service");
+const { detectReminderCandidates } = require("../../utils/reminderDetection");
 
 
 /*
@@ -352,6 +353,50 @@ const processDocument = async (documentId) => {
             );
         }
 
+        const { data: settings, error: settingsError } = await supabase
+            .from("user_settings")
+            .select("default_reminder_days, timezone")
+            .eq("user_id", document.user_id)
+            .maybeSingle();
+
+        if (settingsError) throw settingsError;
+
+        const candidates = detectReminderCandidates({
+            text: extractedText,
+            documentName: document.original_name,
+            defaultReminderDays: settings?.default_reminder_days ?? 7,
+            timeZone: settings?.timezone || "Asia/Kolkata",
+        });
+
+        if (candidates.length) {
+            const { data: existing, error: existingError } = await supabase
+                .from("reminders")
+                .select("reminder_type, due_date")
+                .eq("user_id", document.user_id)
+                .eq("document_id", document.id)
+                .eq("source", "ai");
+
+            if (existingError) throw existingError;
+
+            const existingKeys = new Set((existing || []).map(
+                (reminder) => `${reminder.reminder_type}:${reminder.due_date}`
+            ));
+            const newReminders = candidates
+                .filter((reminder) => !existingKeys.has(`${reminder.reminder_type}:${reminder.due_date}`))
+                .map((reminder) => ({
+                    ...reminder,
+                    user_id: document.user_id,
+                    document_id: document.id,
+                }));
+
+            if (newReminders.length) {
+                const { error: insertError } = await supabase
+                    .from("reminders")
+                    .insert(newReminders);
+                if (insertError) throw insertError;
+                console.log(`Created ${newReminders.length} AI reminder(s) for document ${documentId}.`);
+            }
+        }
 
         /*
         |--------------------------------------------------------------------------

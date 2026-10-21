@@ -13,6 +13,8 @@ import DashboardLayout from "./app/dashboard/layout";
 import DashboardPage from "./app/dashboard/page";
 import DocumentsPage from "./app/dashboard/documents/page";
 import AssistantPage from "./app/dashboard/assistant/page";
+import RemindersPage from "./app/dashboard/reminders/page";
+import SettingsPage from "./app/dashboard/settings/page";
 
 export default function App() {
   return (
@@ -51,6 +53,24 @@ export default function App() {
             element={
               <DashboardLayout>
                 <AssistantPage />
+              </DashboardLayout>
+            }
+          />
+
+          <Route
+            path="/dashboard/reminders"
+            element={
+              <DashboardLayout>
+                <RemindersPage />
+              </DashboardLayout>
+            }
+          />
+
+          <Route
+            path="/dashboard/settings"
+            element={
+              <DashboardLayout>
+                <SettingsPage />
               </DashboardLayout>
             }
           />

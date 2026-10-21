@@ -1,7 +1,20 @@
+import { useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import TopNavbar from "@/components/layout/TopNavbar";
+import { getSettings } from "@/services/settings";
+import { applyThemePreference, getStoredThemePreference } from "@/services/theme";
 
 export default function DashboardLayout({ children }) {
+  useEffect(() => {
+    applyThemePreference(getStoredThemePreference());
+    getSettings()
+      .then((response) => {
+        applyThemePreference(response.settings?.theme || "light");
+        localStorage.setItem("lifehub-timezone", response.settings?.timezone || "Asia/Kolkata");
+      })
+      .catch((error) => console.error("Could not apply saved appearance settings:", error));
+  }, []);
+
   return (
     <div className="dashboard-workspace flex h-screen overflow-hidden">
       {/* Sidebar */}

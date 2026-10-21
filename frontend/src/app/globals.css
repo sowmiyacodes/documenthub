@@ -3453,6 +3453,942 @@ select {
   }
 }
 
+/* Reminders and settings modules */
+.reminders-page,
+.settings-page {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 32px;
+  color: #174681;
+}
+
+.reminders-hero,
+.settings-hero {
+  display: flex;
+  min-height: 150px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 32px;
+  border: 1px solid #cbdcf2;
+  border-radius: 18px;
+  background: linear-gradient(115deg, #f4f8fe, #e9f2fc);
+  box-shadow: 0 7px 20px rgba(24, 57, 98, 0.05);
+}
+
+.reminders-eyebrow,
+.settings-eyebrow,
+.reminders-section-kicker {
+  color: #174f93 !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+}
+
+.reminders-title,
+.settings-title {
+  margin-top: 5px !important;
+  color: #17375f !important;
+  font-size: clamp(1.8rem, 3vw, 2.3rem) !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.reminders-subtitle,
+.settings-subtitle {
+  margin-top: 5px !important;
+  color: #385878 !important;
+  font-size: 0.92rem !important;
+}
+
+.reminders-create-button,
+.settings-save-button {
+  min-height: 44px !important;
+  padding-inline: 17px !important;
+  border: 1px solid #b9cde7 !important;
+  border-radius: 10px !important;
+  background: #e4eefb !important;
+  color: #174681 !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.reminders-create-button:hover,
+.settings-save-button:hover {
+  background: #d7e7fa !important;
+  box-shadow: none !important;
+}
+
+.reminders-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reminders-summary-card {
+  position: relative;
+  display: grid;
+  min-height: 122px;
+  grid-template-columns: 38px 1fr;
+  align-content: center;
+  align-items: center;
+  column-gap: 11px;
+  padding: 17px;
+  border: 1px solid #d8e4f2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 13px rgba(24, 57, 98, 0.035);
+}
+
+.reminders-summary-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  grid-row: span 2;
+  place-items: center;
+  border: 1px solid #cbdcf2;
+  border-radius: 11px;
+  background: #edf4fd;
+  color: #174f93;
+}
+
+.reminders-summary-icon .MuiSvgIcon-root {
+  font-size: 20px;
+}
+
+.reminders-summary-label {
+  color: #385878 !important;
+  font-size: 0.75rem !important;
+  font-weight: 650 !important;
+  line-height: 1.3 !important;
+}
+
+.reminders-summary-value {
+  color: #17375f !important;
+  font-size: 1.45rem !important;
+  font-weight: 750 !important;
+  line-height: 1.3 !important;
+}
+
+.summary-overdue .reminders-summary-icon,
+.reminder-overdue .reminder-status-pill {
+  border-color: #c4b2db;
+  background: #f2ebfa;
+  color: #523b78;
+}
+
+.reminder-due_today .reminder-status-pill {
+  border-color: #c9b878;
+  background: #faf5e7;
+  color: #66521d;
+}
+
+.reminder-completed .reminder-status-pill {
+  border-color: #a9cdbb;
+  background: #edf6f0;
+  color: #28563a;
+}
+
+.reminder-dismissed .reminder-status-pill {
+  border-color: #c8d2df;
+  background: #f0f3f7;
+  color: #405872;
+}
+
+.reminders-list-panel {
+  overflow: hidden;
+  border: 1px solid #d8e4f2;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 6px 19px rgba(24, 57, 98, 0.04);
+}
+
+.reminders-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 21px 24px 18px;
+  border-bottom: 1px solid #e3ebf4;
+}
+
+.reminders-list-heading h2 {
+  margin-top: 3px;
+  color: #17375f;
+  font-size: 1.2rem;
+  font-weight: 750;
+}
+
+.reminders-result-count {
+  color: #385878 !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+}
+
+.reminders-filters {
+  display: grid;
+  grid-template-columns: minmax(210px, 1.6fr) repeat(4, minmax(130px, 1fr)) repeat(2, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 17px 20px;
+  border-bottom: 1px solid #e3ebf4;
+  background: #f8fafd;
+}
+
+.reminders-search {
+  grid-column: span 2;
+}
+
+.reminders-filters .MuiOutlinedInput-root,
+.settings-page .MuiOutlinedInput-root,
+.reminder-dialog .MuiOutlinedInput-root {
+  border-radius: 9px;
+  background: #fff;
+  color: #17375f;
+}
+
+.reminders-filters .MuiInputLabel-root,
+.settings-page .MuiInputLabel-root,
+.reminder-dialog .MuiInputLabel-root {
+  color: #385878;
+}
+
+.reminders-filters .MuiInputBase-input,
+.settings-page .MuiInputBase-input,
+.reminder-dialog .MuiInputBase-input {
+  color: #17375f;
+}
+
+.reminders-filters .MuiSvgIcon-root,
+.settings-page .MuiSvgIcon-root {
+  color: #385878;
+}
+
+.reminders-filters .MuiInputAdornment-root .MuiSvgIcon-root {
+  color: #385878;
+}
+
+.reminder-list {
+  padding: 15px 20px;
+}
+
+.reminder-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 15px;
+  min-height: 102px;
+  padding: 14px;
+  border: 1px solid #e0e8f2;
+  border-radius: 13px;
+  background: #fff;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.reminder-row:hover {
+  border-color: #b7cce7;
+  box-shadow: 0 5px 14px rgba(24, 57, 98, 0.055);
+}
+
+.reminder-overdue {
+  border-left: 3px solid #8065a6;
+}
+
+.reminder-due_today {
+  border-left: 3px solid #b99b4b;
+}
+
+.reminder-completed {
+  opacity: 0.8;
+}
+
+.reminder-date-tile {
+  display: flex;
+  width: 48px;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid #d0def0;
+  border-radius: 10px;
+  background: #f0f5fc;
+}
+
+.reminder-date-tile span {
+  color: #385878;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.reminder-date-tile strong {
+  color: #174681;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.reminder-content {
+  min-width: 0;
+}
+
+.reminder-title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reminder-title {
+  color: #17375f !important;
+  font-size: 0.94rem !important;
+  font-weight: 700 !important;
+}
+
+.reminder-description {
+  display: -webkit-box;
+  margin-top: 3px !important;
+  overflow: hidden;
+  color: #385878 !important;
+  font-size: 0.79rem !important;
+  line-height: 1.45 !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.reminder-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 7px;
+}
+
+.reminder-meta span {
+  color: #385878;
+  font-size: 0.69rem;
+}
+
+.reminder-priority {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.priority-high {
+  color: #704b7e !important;
+}
+
+.priority-medium {
+  color: #765e21 !important;
+}
+
+.priority-low {
+  color: #315d4a !important;
+}
+
+.reminder-source-badge {
+  padding: 3px 7px;
+  border: 1px solid #b9cde7;
+  border-radius: 999px;
+  background: #edf4fd;
+  color: #174681;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.reminder-status-pill {
+  padding: 6px 9px;
+  border: 1px solid #cbdcf2;
+  border-radius: 999px;
+  background: #edf4fd;
+  color: #174681;
+  font-size: 0.69rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.reminder-actions {
+  display: flex;
+  align-items: center;
+}
+
+.reminder-actions .MuiIconButton-root {
+  color: #315d8d;
+}
+
+.reminder-actions .MuiIconButton-root:hover {
+  background: #edf4fd;
+  color: #174681;
+}
+
+.reminders-loading,
+.settings-loading {
+  display: flex;
+  min-height: 230px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: #385878;
+}
+
+.reminders-empty {
+  display: flex;
+  min-height: 270px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.reminders-empty-icon,
+.settings-section-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid #cbdcf2;
+  border-radius: 13px;
+  background: #edf4fd;
+  color: #174f93;
+}
+
+.reminders-empty h3 {
+  margin-top: 13px;
+  color: #17375f;
+  font-size: 1.05rem;
+}
+
+.reminders-empty > .MuiTypography-root:not(h3) {
+  max-width: 450px;
+  margin-top: 5px;
+  color: #385878;
+  font-size: 0.84rem;
+}
+
+.reminders-empty .MuiButton-root {
+  margin-top: 16px;
+  border: 1px solid #b9cde7;
+  background: #e4eefb;
+  color: #174681;
+  text-transform: none;
+  box-shadow: none;
+}
+
+.reminders-pagination {
+  display: flex;
+  justify-content: center;
+  padding: 4px 20px 20px;
+}
+
+.reminders-pagination .MuiPaginationItem-root {
+  color: #174681;
+}
+
+.reminders-pagination .MuiPaginationItem-root.Mui-selected {
+  background: #e4eefb;
+}
+
+.reminder-dialog .MuiDialog-paper {
+  border: 1px solid #cbdcf2;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.reminder-dialog-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid #e1eaf4;
+  color: #17375f;
+}
+
+.reminder-dialog-title h2 {
+  color: #17375f;
+  font-size: 1.25rem;
+  font-weight: 750;
+}
+
+.reminder-eyebrow,
+.reminder-field-label {
+  color: #174f93 !important;
+  font-size: 0.68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+}
+
+.reminder-field-label {
+  display: block;
+  margin-bottom: 8px;
+  letter-spacing: normal !important;
+}
+
+.reminder-dialog-content {
+  padding-top: 16px !important;
+}
+
+.reminder-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.reminder-form-note,
+.settings-inline-note {
+  color: #385878 !important;
+  font-size: 0.76rem !important;
+}
+
+.reminder-dialog .MuiFormControlLabel-label {
+  color: #315375;
+  font-size: 0.8rem;
+}
+
+.reminder-dialog-actions {
+  padding: 14px 22px 18px;
+  border-top: 1px solid #e1eaf4;
+}
+
+.reminder-dialog-actions .MuiButton-root {
+  color: #174681;
+  text-transform: none;
+}
+
+.reminder-dialog-actions .MuiButton-contained {
+  border: 1px solid #b9cde7;
+  background: #e4eefb;
+  box-shadow: none;
+}
+
+.settings-sections {
+  display: grid;
+  gap: 15px;
+}
+
+.settings-section {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid #d8e4f2;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(24, 57, 98, 0.035);
+}
+
+.settings-section-body {
+  min-width: 0;
+}
+
+.settings-section-body > h2 {
+  color: #17375f;
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.settings-section-description {
+  margin-top: 4px !important;
+  color: #385878 !important;
+  font-size: 0.82rem !important;
+}
+
+.settings-preference-list {
+  margin-top: 15px !important;
+  border-top: 1px solid #e3ebf4;
+}
+
+.settings-preference-row {
+  display: flex;
+  min-height: 70px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e3ebf4;
+}
+
+.settings-preference-row .MuiTypography-root:first-child {
+  color: #17375f;
+  font-size: 0.87rem;
+  font-weight: 650;
+}
+
+.settings-preference-row .MuiTypography-body2 {
+  margin-top: 2px;
+  color: #385878;
+  font-size: 0.75rem;
+}
+
+.settings-page .MuiSwitch-switchBase.Mui-checked {
+  color: #174f93;
+}
+
+.settings-page .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+  background-color: #a9c3e3;
+}
+
+.settings-days-row .MuiTextField-root {
+  width: 145px;
+}
+
+.settings-theme-select,
+.settings-timezone {
+  max-width: 450px;
+  margin-top: 16px !important;
+}
+
+.settings-inline-note {
+  display: block;
+  margin-top: 8px !important;
+}
+
+.settings-error,
+.reminders-error {
+  border: 1px solid #d7bfd4;
+  background: #f8f1f8;
+  color: #5c3d68;
+}
+
+@media (max-width: 1100px) {
+  .reminders-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .reminders-filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .reminders-search {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .reminders-hero,
+  .settings-hero {
+    min-height: 0;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 23px;
+  }
+
+  .reminders-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reminders-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 14px;
+  }
+
+  .reminders-search {
+    grid-column: 1 / -1;
+  }
+
+  .reminder-list {
+    padding: 12px;
+  }
+
+  .reminder-row {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 11px;
+  }
+
+  .reminder-date-tile {
+    width: 44px;
+  }
+
+  .reminder-status-pill {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .reminder-actions {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    flex-direction: column;
+  }
+
+  .settings-section {
+    padding: 19px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reminders-summary-card {
+    min-height: 98px;
+    padding: 12px;
+  }
+
+  .reminders-summary-grid {
+    gap: 8px;
+  }
+
+  .reminders-summary-label {
+    font-size: 0.69rem !important;
+  }
+
+  .reminders-summary-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .reminders-list-heading {
+    padding-inline: 16px;
+  }
+
+  .reminders-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .reminders-search {
+    grid-column: auto;
+  }
+
+  .reminder-row {
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    align-items: start;
+  }
+
+  .reminder-date-tile {
+    width: 38px;
+    min-height: 49px;
+  }
+
+  .reminder-actions {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+  }
+
+  .reminder-status-pill {
+    grid-column: 2;
+  }
+
+  .reminder-meta {
+    gap: 5px 9px;
+  }
+
+  .reminder-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-section {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .settings-preference-row {
+    align-items: flex-start;
+    padding-block: 13px;
+  }
+
+  .settings-days-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-days-row .MuiTextField-root {
+    width: 100%;
+  }
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] .dashboard-viewport,
+html[data-theme="dark"] .dashboard-main {
+  background: #0e1b2d !important;
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .workspace-sidebar,
+html[data-theme="dark"] .workspace-topbar,
+html[data-theme="dark"] .reminders-list-panel,
+html[data-theme="dark"] .reminder-row,
+html[data-theme="dark"] .settings-section,
+html[data-theme="dark"] .MuiDialog-paper {
+  border-color: #2a4465 !important;
+  background: #14263e !important;
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .reminders-hero,
+html[data-theme="dark"] .settings-hero {
+  border-color: #34547b;
+  background: linear-gradient(115deg, #192f4c, #1c385c);
+}
+
+html[data-theme="dark"] :is(
+  .reminders-page, .settings-page, .reminders-title, .settings-title,
+  .reminders-list-heading h2, .reminder-title, .settings-section-body > h2,
+  .settings-preference-row .MuiTypography-root:first-child,
+  .reminder-dialog-title h2, .reminder-eyebrow
+) {
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] :is(
+  .reminders-subtitle, .settings-subtitle, .reminders-summary-label,
+  .reminders-result-count, .reminder-description, .reminder-meta span,
+  .settings-section-description, .settings-preference-row .MuiTypography-body2,
+  .settings-inline-note, .reminder-form-note, .reminder-dialog .MuiFormControlLabel-label,
+  .reminders-loading, .settings-loading
+) {
+  color: #a9c7eb !important;
+}
+
+html[data-theme="dark"] .reminders-summary-card,
+html[data-theme="dark"] .reminders-filters,
+html[data-theme="dark"] .reminder-date-tile,
+html[data-theme="dark"] .reminder-dialog-actions,
+html[data-theme="dark"] .reminder-dialog-title {
+  border-color: #2a4465;
+  background: #192f4c;
+}
+
+html[data-theme="dark"] .reminders-filters .MuiOutlinedInput-root,
+html[data-theme="dark"] .settings-page .MuiOutlinedInput-root,
+html[data-theme="dark"] .reminder-dialog .MuiOutlinedInput-root {
+  background: #102039;
+}
+
+html[data-theme="dark"] :is(
+  .reminders-filters .MuiInputLabel-root, .settings-page .MuiInputLabel-root,
+  .reminder-dialog .MuiInputLabel-root, .reminders-filters .MuiInputBase-input,
+  .settings-page .MuiInputBase-input, .reminder-dialog .MuiInputBase-input,
+  .reminder-dialog-actions .MuiButton-root
+) {
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .workspace-brand-name,
+html[data-theme="dark"] .workspace-page-title,
+html[data-theme="dark"] .workspace-account-name,
+html[data-theme="dark"] .workspace-nav-caption,
+html[data-theme="dark"] .workspace-nav-item,
+html[data-theme="dark"] .workspace-nav-item .workspace-nav-text,
+html[data-theme="dark"] .workspace-switcher-label,
+html[data-theme="dark"] .workspace-switcher-value,
+html[data-theme="dark"] .workspace-account-email {
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .workspace-switcher,
+html[data-theme="dark"] .workspace-storage,
+html[data-theme="dark"] .workspace-ai-promo {
+  border-color: #2a4465;
+  background: #192f4c;
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .workspace-ai-promo :is(.workspace-ai-promo-title, .workspace-ai-promo-copy, .workspace-ai-promo-link) {
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .reminder-status-pill,
+html[data-theme="dark"] .reminder-source-badge,
+html[data-theme="dark"] .reminders-create-button,
+html[data-theme="dark"] .settings-save-button {
+  border-color: #456b99 !important;
+  background: #203c60 !important;
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .MuiMenu-paper,
+html[data-theme="dark"] .MuiPopover-paper {
+  border: 1px solid #2a4465;
+  background: #14263e;
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .MuiMenuItem-root,
+html[data-theme="dark"] .MuiMenuItem-root .MuiSvgIcon-root {
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .MuiMenuItem-root:hover {
+  background: #203c60;
+}
+
+/* Final overrides keep the original workspace theme consistent with the module pages. */
+.dashboard-welcome-hero,
+.overview-welcome {
+  border-color: #c5d7ee !important;
+  background: linear-gradient(115deg, #f4f8fe 0%, #e8f1fc 100%) !important;
+  color: #174681 !important;
+}
+
+.dashboard-welcome-hero :is(.dashboard-welcome-title, .dashboard-welcome-eyebrow, .MuiTypography-root),
+.overview-welcome :is(.overview-kicker, .overview-title, .overview-description),
+.overview-files-kicker {
+  color: #174681 !important;
+}
+
+.vault-page-heading {
+  border: 1px solid #c5d7ee !important;
+  background: linear-gradient(115deg, #f4f8fe 0%, #e8f1fc 100%) !important;
+}
+
+.vault-page-heading :is(.vault-heading-eyebrow, .MuiTypography-root) {
+  color: #174681 !important;
+}
+
+.workspace-ai-promo {
+  border-color: #c5d7ee !important;
+  background: #edf4fd !important;
+  color: #174681 !important;
+}
+
+.workspace-ai-promo :is(.workspace-ai-promo-title, .workspace-ai-promo-copy, .workspace-ai-promo-link) {
+  color: #174681 !important;
+}
+
+.dashboard-workspace .MuiButton-contained,
+.MuiDialog-root .MuiButton-contained {
+  border: 1px solid #c5d7ee !important;
+  background: #eaf2fc !important;
+  color: #174681 !important;
+  box-shadow: none !important;
+}
+
+.dashboard-workspace .MuiButton-contained:hover,
+.MuiDialog-root .MuiButton-contained:hover {
+  background: #d7e7fa !important;
+}
+
+.assistant-message.is-user .assistant-chat-bubble,
+.assistant-message.is-user .assistant-chat-bubble :is(p, span, strong, em, li, h1, h2, h3, h4) {
+  color: #174681 !important;
+}
+
+html[data-theme="dark"] .dashboard-welcome-hero,
+html[data-theme="dark"] .overview-welcome,
+html[data-theme="dark"] .vault-page-heading {
+  border-color: #34547b !important;
+  background: linear-gradient(115deg, #192f4c, #1c385c) !important;
+}
+
+html[data-theme="dark"] .dashboard-welcome-hero :is(.dashboard-welcome-title, .dashboard-welcome-eyebrow, .MuiTypography-root),
+html[data-theme="dark"] .overview-welcome :is(.overview-kicker, .overview-title, .overview-description),
+html[data-theme="dark"] .overview-files-kicker,
+html[data-theme="dark"] .vault-page-heading :is(.vault-heading-eyebrow, .MuiTypography-root),
+html[data-theme="dark"] .workspace-ai-promo :is(.workspace-ai-promo-title, .workspace-ai-promo-copy, .workspace-ai-promo-link),
+html[data-theme="dark"] .dashboard-workspace .MuiButton-contained,
+html[data-theme="dark"] .MuiDialog-root .MuiButton-contained {
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .dashboard-workspace .MuiButton-contained,
+html[data-theme="dark"] .MuiDialog-root .MuiButton-contained {
+  border-color: #456b99 !important;
+  background: #203c60 !important;
+}
+
+html[data-theme="dark"] .dashboard-workspace .MuiButton-contained:hover,
+html[data-theme="dark"] .MuiDialog-root .MuiButton-contained:hover {
+  background: #294b73 !important;
+}
+
 /* Keep visible copy blue across the landing and signed-in workspaces. */
 .studio-dark-button,
 .studio-accent-button {
@@ -3500,6 +4436,75 @@ select {
   background: linear-gradient(115deg, #f4f8fe 0%, #e8f1fc 100%) !important;
   box-shadow: 0 10px 26px rgba(24, 57, 98, 0.08) !important;
   color: #174681 !important;
+}
+
+html[data-theme="dark"] .dashboard-main-inner :is(.MuiPaper-root, .MuiCard-root),
+html[data-theme="dark"] .dashboard-main-inner :is(
+  .overview-metric, .overview-files-panel, .overview-document-row, .overview-empty,
+  .vault-toolbar, .vault-search-results, .vault-table-wrap, .vault-file-actions,
+  .dashboard-assistant, .assistant-history-panel, .assistant-history-sidebar,
+  .assistant-workspace-header, .assistant-message-stream, .assistant-input-dock,
+  .assistant-prompt-card
+) {
+  border-color: #2a4465 !important;
+  background-color: #14263e !important;
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .dashboard-main-inner :is(
+  .overview-metric-label, .overview-metric-value, .overview-files-title,
+  .overview-document-name, .overview-document-meta, .overview-empty h3,
+  .overview-empty > .MuiTypography-root, .vault-toolbar-heading,
+  .assistant-workspace-header .MuiTypography-root,
+  .assistant-empty-state .MuiTypography-root, .assistant-prompt-title,
+  .assistant-message .MuiTypography-root, .assistant-history-sidebar .MuiTypography-root
+) {
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .dashboard-main-inner :is(
+  .overview-document-row, .vault-file-actions, .assistant-history-sidebar,
+  .assistant-workspace-header, .assistant-message-stream, .assistant-input-dock,
+  .assistant-prompt-card
+) {
+  border-color: #2a4465 !important;
+}
+
+html[data-theme="dark"] .dashboard-main-inner .MuiOutlinedInput-root,
+html[data-theme="dark"] .dashboard-main-inner .MuiInputBase-root,
+html[data-theme="dark"] .dashboard-main-inner .MuiTableContainer-root {
+  border-color: #34547b !important;
+  background-color: #102039 !important;
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .dashboard-main-inner :is(
+  .MuiInputBase-input, .MuiInputLabel-root, .MuiSelect-icon, .MuiTableCell-root,
+  .MuiChip-label, .MuiIconButton-root, .MuiToggleButton-root
+) {
+  color: #a9c7eb !important;
+}
+
+html[data-theme="dark"] .dashboard-main-inner .MuiTableCell-root {
+  border-color: #2a4465 !important;
+  background-color: #14263e !important;
+}
+
+html[data-theme="dark"] .dashboard-main-inner .MuiTableHead-root .MuiTableCell-root {
+  background-color: #192f4c !important;
+  color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .assistant-message.is-user .assistant-chat-bubble,
+html[data-theme="dark"] .assistant-message.is-user .assistant-chat-bubble :is(p, span, strong, em, li, h1, h2, h3, h4) {
+  border-color: #8fb8eb !important;
+  background: #dbeafe !important;
+  color: #174681 !important;
+}
+
+html[data-theme="dark"] .settings-dark-mode-row,
+html[data-theme="dark"] .settings-preference-row {
+  border-color: #2a4465 !important;
 }
 
 .dashboard-welcome-hero :is(.dashboard-welcome-title, .dashboard-welcome-eyebrow, .MuiTypography-root),

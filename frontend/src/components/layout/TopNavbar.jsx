@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   AppBar,
   Toolbar,
   Box,
@@ -13,6 +14,13 @@ import {
   MenuItem,
   Divider,
   Tooltip,
+  Popover,
+  List,
+  ListItemButton,
+  ListItemText,
+  CircularProgress,
+  Button,
+  Snackbar,
 } from "@mui/material";
 
 import {
@@ -25,17 +33,104 @@ import {
 } from "@mui/icons-material";
 
 import { useLocation, useNavigate } from "react-router-dom";
+import { getReminderNotifications } from "@/services/reminders";
+import { formatDateOnly, formatDateTimeInTimeZone } from "@/services/dateTime";
+import { playNotificationSound, prepareNotificationSound } from "@/services/notificationSound";
 
 export default function TopNavbar() {
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationAnchor, setNotificationAnchor] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+  const [notificationsError, setNotificationsError] = useState("");
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const knownNotificationIds = useRef(null);
+  const nextNotificationTimer = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const pageTitle = location.pathname.startsWith("/dashboard/documents")
     ? "My documents"
     : location.pathname.startsWith("/dashboard/assistant")
       ? "AI workspace"
-      : "Overview";
+      : location.pathname.startsWith("/dashboard/reminders")
+        ? "Reminders"
+        : location.pathname.startsWith("/dashboard/settings")
+          ? "Settings"
+          : "Overview";
+
+  const loadNotifications = useCallback(async () => {
+    try {
+      const response = await getReminderNotifications();
+      const updatedNotifications = response.notifications || [];
+      const newNotifications = knownNotificationIds.current
+        ? updatedNotifications.filter((item) => !knownNotificationIds.current.has(item.id))
+        : updatedNotifications.filter((item) => (
+          item.remind_at
+          && Date.now() - new Date(item.remind_at).getTime() < 90_000
+        ));
+      if (newNotifications.length) {
+        const firstTitle = newNotifications[0].title;
+        setNotificationMessage(
+          newNotifications.length === 1
+            ? `Reminder: ${firstTitle}`
+            : `${newNotifications.length} reminders are due.`
+        );
+        if (localStorage.getItem("lifehub-notification-sound") !== "false") {
+          await playNotificationSound();
+        }
+      }
+      knownNotificationIds.current = new Set(updatedNotifications.map((item) => item.id));
+      setNotifications(updatedNotifications);
+      setNotificationCount(response.count || 0);
+      setNotificationsError("");
+      if (nextNotificationTimer.current) {
+        window.clearTimeout(nextNotificationTimer.current);
+      }
+      if (response.next_notification_at) {
+        const delay = Math.max(0, new Date(response.next_notification_at).getTime() - Date.now() + 150);
+        nextNotificationTimer.current = window.setTimeout(
+          loadNotifications,
+          Math.min(delay, 2_147_000_000)
+        );
+      }
+    } catch (error) {
+      console.error("Could not load in-app reminder notifications:", error);
+      setNotificationsError(error.response?.data?.message || "Could not load notifications.");
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = window.setInterval(loadNotifications, 30_000);
+    window.addEventListener("focus", loadNotifications);
+    window.addEventListener("lifehub:reminders-changed", loadNotifications);
+    return () => {
+      window.clearInterval(interval);
+      if (nextNotificationTimer.current) window.clearTimeout(nextNotificationTimer.current);
+      window.removeEventListener("focus", loadNotifications);
+      window.removeEventListener("lifehub:reminders-changed", loadNotifications);
+    };
+  }, [loadNotifications, location.pathname]);
+
+  useEffect(() => {
+    const unlockSound = () => {
+      window.removeEventListener("pointerdown", unlockSound);
+      window.removeEventListener("keydown", unlockSound);
+      if (localStorage.getItem("lifehub-notification-sound") !== "false") {
+        prepareNotificationSound();
+      }
+    };
+    window.addEventListener("pointerdown", unlockSound, { once: true });
+    window.addEventListener("keydown", unlockSound, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlockSound);
+      window.removeEventListener("keydown", unlockSound);
+    };
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -54,6 +149,12 @@ export default function TopNavbar() {
 
   const closeMenu = () => {
     setAnchorEl(null);
+  };
+
+  const closeNotifications = () => setNotificationAnchor(null);
+  const openReminder = () => {
+    closeNotifications();
+    navigate("/dashboard/reminders");
   };
 
   const logout = () => {
@@ -174,6 +275,8 @@ export default function TopNavbar() {
 
             <Tooltip title="Notifications">
               <IconButton
+                aria-label={`Open notifications${notificationCount ? `, ${notificationCount} due` : ""}`}
+                onClick={(event) => setNotificationAnchor(event.currentTarget)}
                 size="small"
                 sx={{
                   bgcolor: "#f8fafc",
@@ -185,10 +288,14 @@ export default function TopNavbar() {
                 }}
               >
                 <Badge
-                  variant="dot"
+                  badgeContent={notificationCount}
+                  max={99}
+                  invisible={!notificationCount}
                   sx={{
                     "& .MuiBadge-badge": {
-                      bgcolor: "#2563eb",
+                      bgcolor: "#dbeafe",
+                      color: "#174681",
+                      border: "1px solid #a9c3e3",
                     },
                   }}
                 >
@@ -246,6 +353,85 @@ export default function TopNavbar() {
         </Toolbar>
       </AppBar>
 
+      <Popover
+        open={Boolean(notificationAnchor)}
+        anchorEl={notificationAnchor}
+        onClose={closeNotifications}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{ paper: { sx: { width: { xs: 320, sm: 380 }, mt: 1, border: "1px solid #dbeafe", borderRadius: 2, boxShadow: "0 16px 40px rgba(30, 64, 175, 0.16)" } } }}
+      >
+        <Box sx={{ px: 2, pt: 1.75, pb: 1.25, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Box>
+            <Typography sx={{ fontWeight: 750, color: "#174681" }}>Notifications</Typography>
+            <Typography variant="caption" sx={{ color: "#3b5990" }}>
+              {notificationCount ? `${notificationCount} reminder${notificationCount === 1 ? "" : "s"} need attention` : "Your reminder alerts"}
+            </Typography>
+          </Box>
+          {notificationCount > 0 && (
+            <Typography variant="caption" sx={{ color: "#174681", fontWeight: 700 }}>
+              {notificationCount} due
+            </Typography>
+          )}
+        </Box>
+        <Divider />
+        {notificationsError ? (
+          <Alert severity="error" sx={{ m: 1.5 }}>{notificationsError}</Alert>
+        ) : notificationsLoading ? (
+          <Box sx={{ py: 4, display: "flex", justifyContent: "center" }}>
+            <CircularProgress size={22} />
+          </Box>
+        ) : notifications.length ? (
+          <List dense disablePadding sx={{ maxHeight: 360, overflowY: "auto" }}>
+            {notifications.map((notification) => {
+              const timeZone = localStorage.getItem("lifehub-timezone") || "Asia/Kolkata";
+              const notifyTime = notification.remind_at
+                ? formatDateTimeInTimeZone(notification.remind_at, timeZone)
+                : `Due ${formatDateOnly(notification.due_date)}`;
+              return (
+                <ListItemButton
+                  key={notification.id}
+                  onClick={openReminder}
+                  sx={{ px: 2, py: 1.25, borderBottom: "1px solid #eff6ff", alignItems: "flex-start" }}
+                >
+                  <ListItemText
+                    primary={notification.title}
+                    secondary={`${notifyTime}${notification.document_name ? ` · ${notification.document_name}` : ""}`}
+                    primaryTypographyProps={{ sx: { color: "#174681", fontWeight: 700, fontSize: "0.88rem" } }}
+                    secondaryTypographyProps={{ sx: { color: "#3b5990", fontSize: "0.77rem", mt: 0.25 } }}
+                  />
+                </ListItemButton>
+              );
+            })}
+          </List>
+        ) : (
+          <Typography sx={{ px: 2, py: 3, color: "#3b5990", fontSize: "0.86rem" }}>
+            No reminders are due right now.
+          </Typography>
+        )}
+        <Divider />
+        <Box sx={{ p: 1, display: "flex", justifyContent: "flex-end" }}>
+          <Button size="small" onClick={openReminder} sx={{ color: "#174681", fontWeight: 700 }}>
+            View all reminders
+          </Button>
+        </Box>
+      </Popover>
+      <Snackbar
+        open={Boolean(notificationMessage)}
+        autoHideDuration={6000}
+        onClose={() => setNotificationMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity="info"
+          onClick={openReminder}
+          onClose={() => setNotificationMessage("")}
+          sx={{ cursor: "pointer", border: "1px solid #b9cde7", bgcolor: "#edf4fd", color: "#174681" }}
+        >
+          {notificationMessage}
+        </Alert>
+      </Snackbar>
+
       {/* Profile Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -280,6 +466,11 @@ export default function TopNavbar() {
         <MenuItem onClick={() => { closeMenu(); navigate("/dashboard/assistant"); }} sx={{ fontSize: "0.85rem", gap: 1 }}>
           <AutoAwesome sx={{ fontSize: 18, color: "#2563eb" }} />
           AI Assistant
+        </MenuItem>
+
+        <MenuItem onClick={() => { closeMenu(); navigate("/dashboard/settings"); }} sx={{ fontSize: "0.85rem", gap: 1 }}>
+          <Settings sx={{ fontSize: 18, color: "#2563eb" }} />
+          Settings
         </MenuItem>
 
         <Divider sx={{ my: 0.5 }} />

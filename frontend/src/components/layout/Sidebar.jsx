@@ -39,14 +39,12 @@ const menu = [
   {
     text: "Reminders",
     icon: <Notifications sx={{ fontSize: 19 }} />,
-    path: "#",
-    disabled: true,
+    path: "/dashboard/reminders",
   },
   {
     text: "Settings",
     icon: <Settings sx={{ fontSize: 19 }} />,
-    path: "#",
-    disabled: true,
+    path: "/dashboard/settings",
   },
 ];
 
