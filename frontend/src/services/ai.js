@@ -17,9 +17,7 @@ export const askAI = async ({ question, documentId }) => {
 };
 
 export const getSummary = async (documentId) => {
-  const response = await api.post("/ai/summary", {
-    documentId,
-  });
+  const response = await api.get(`/ai/document/${documentId}/summary`);
 
   return response.data;
 };
