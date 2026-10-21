@@ -8,7 +8,7 @@ Document AI
 */
 
 export const askAI = async ({ question, documentId }) => {
-  const response = await api.post("/ai/ask", {
+  const response = await api.post("/ai/chat", {
     question,
     documentId,
   });
