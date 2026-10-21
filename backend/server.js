@@ -11,9 +11,23 @@ const reminderJob = require("./jobs/reminder.job");
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  ...(process.env.FRONTEND_URLS || process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
+
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Origin is not allowed by CORS."));
+    },
     credentials: true,
   })
 );
@@ -30,6 +44,10 @@ app.use("/api/settings", settingsRoutes);
 // Test Route
 app.get("/", (req, res) => {
   res.send("LifeHub Backend Running");
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 // Start Server
