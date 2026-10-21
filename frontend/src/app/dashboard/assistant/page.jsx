@@ -336,13 +336,21 @@ export default function AssistantPage() {
     }
   };
 
-  const handleOpenDocument = async (documentId) => {
+  const handleOpenDocument = async (documentId, pageNumber) => {
     try {
       const response = await viewDocument(documentId);
 
       if (response.url) {
+        const documentUrl = new URL(response.url);
+        if (
+          response.document?.file_type === "application/pdf"
+          && Number.isInteger(Number(pageNumber))
+          && Number(pageNumber) > 0
+        ) {
+          documentUrl.hash = `page=${Number(pageNumber)}`;
+        }
         window.open(
-          response.url,
+          documentUrl.toString(),
           "_blank",
           "noopener,noreferrer"
         );

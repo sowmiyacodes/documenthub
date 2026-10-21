@@ -1,354 +1,193 @@
 const supabase = require("../../config/supabase");
-
 const embeddingService = require("./embedding.service");
 const llmService = require("./llm.service");
+const { selectRelevantChunks } = require("../utils/documentChunks");
 
-/*
-|--------------------------------------------------------------------------
-| Convert metadata into readable text
-|--------------------------------------------------------------------------
-*/
+const NO_EVIDENCE_ANSWER =
+    "I couldn't find enough relevant information in your uploaded documents to answer reliably.";
+const MINIMUM_SIMILARITY = 0.1;
+const RETRIEVAL_LIMIT = 12;
+const SOURCE_LIMIT = 8;
+const EXCERPT_LIMIT = 640;
 
-const formatMetadata = (metadata) => {
-    if (!metadata) {
-        return "";
-    }
+const createExcerpt = (text, question) => {
+    const cleanText = text.trim();
+    if (cleanText.length <= EXCERPT_LIMIT) return cleanText;
 
-    try {
-        if (typeof metadata === "string") {
-            return metadata;
-        }
+    const stopWords = new Set(["about", "does", "from", "have", "that", "this", "what", "when", "where", "which", "with"]);
+    const terms = (question.toLowerCase().match(/[a-z0-9]{4,}/g) || [])
+        .filter((term) => !stopWords.has(term))
+        .sort((left, right) => right.length - left.length);
+    const lowerText = cleanText.toLowerCase();
+    const matchPosition = terms
+        .map((term) => lowerText.indexOf(term))
+        .filter((position) => position >= 0)
+        .sort((left, right) => left - right)[0];
+    const start = Math.min(
+        Math.max((matchPosition ?? 0) - 120, 0),
+        cleanText.length - EXCERPT_LIMIT
+    );
+    const end = start + EXCERPT_LIMIT;
 
-        return Object.entries(metadata)
-            .map(([key, value]) => {
-                if (
-                    value === null ||
-                    value === undefined ||
-                    value === ""
-                ) {
-                    return null;
-                }
-
-                if (typeof value === "object") {
-                    return `${key}: ${JSON.stringify(value)}`;
-                }
-
-                return `${key}: ${value}`;
-            })
-            .filter(Boolean)
-            .join("\n");
-
-    } catch (error) {
-        console.error(
-            "Metadata formatting error:",
-            error.message
-        );
-
-        return "";
-    }
+    return `${start ? "… " : ""}${cleanText.slice(start, end).trim()}${end < cleanText.length ? " …" : ""}`;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Build document context
-|--------------------------------------------------------------------------
-*/
-
-const buildDocumentContext = ({
-    document,
-    chunks,
-}) => {
-
-    const sections = [];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Document Summary
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        document &&
-        document.summary &&
-        document.summary.trim()
-    ) {
-        sections.push(`
-DOCUMENT SUMMARY
-----------------
-${document.summary}
-`);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Extracted Metadata
-    |--------------------------------------------------------------------------
-    */
-
-    const metadataText =
-        formatMetadata(document?.metadata);
-
-    if (metadataText.trim()) {
-        sections.push(`
-DOCUMENT METADATA
------------------
-${metadataText}
-`);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | AI Category
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        document &&
-        document.ai_category
-    ) {
-        sections.push(`
-DOCUMENT CATEGORY
------------------
-${document.ai_category}
-`);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relevant Document Chunks
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        chunks &&
-        chunks.length > 0
-    ) {
-
-        const chunkText = chunks
-            .map((chunk, index) => {
-                return `
-[Relevant Chunk ${index + 1}]
-${chunk.chunk_text}
-`;
-            })
-            .join("\n");
-
-        sections.push(`
-RELEVANT DOCUMENT CONTENT
--------------------------
-${chunkText}
-`);
-    }
-
-    return sections.join("\n");
+const getChunkIndex = (chunk) => {
+    const value = chunk.chunk_index ?? chunk.chunkIndex;
+    return Number.isInteger(Number(value)) ? Number(value) : null;
 };
 
-/*
-|--------------------------------------------------------------------------
-| Ask AI about uploaded documents
-|--------------------------------------------------------------------------
-*/
+const enrichSources = async ({ chunks, userId, question }) => {
+    const documentIds = [...new Set(chunks.map((chunk) => chunk.document_id).filter(Boolean))];
+    if (!documentIds.length) return [];
 
-const askQuestion = async ({
-    userId,
-    documentId,
-    question,
-}) => {
+    const { data: documents, error: documentsError } = await supabase
+        .from("documents")
+        .select("id, original_name")
+        .eq("user_id", userId)
+        .in("id", documentIds);
+
+    if (documentsError) throw new Error(`Failed to verify source ownership: ${documentsError.message}`);
+
+    const documentsById = new Map((documents || []).map((document) => [String(document.id), document]));
+    const ownedChunks = chunks.filter((chunk) => documentsById.has(String(chunk.document_id)));
+    if (!ownedChunks.length) return [];
+
+    const ownedDocumentIds = [...new Set(ownedChunks.map((chunk) => chunk.document_id))];
+    const chunkIndexes = [...new Set(ownedChunks.map(getChunkIndex).filter((index) => index !== null))];
+    const chunkTexts = [...new Set(ownedChunks.map((chunk) => chunk.chunk_text))];
+
+    let chunkQuery = supabase
+        .from("document_chunks")
+        .select("document_id, chunk_index, chunk_text, page_number")
+        .in("document_id", ownedDocumentIds);
+
+    if (chunkIndexes.length === ownedChunks.length) {
+        chunkQuery = chunkQuery.in("chunk_index", chunkIndexes);
+    } else {
+        chunkQuery = chunkQuery.in("chunk_text", chunkTexts);
+    }
+
+    const { data: chunkMetadata, error: chunkMetadataError } = await chunkQuery;
+    if (chunkMetadataError) {
+        throw new Error(`Failed to load source metadata: ${chunkMetadataError.message}`);
+    }
+
+    const rows = chunkMetadata || [];
+    return ownedChunks.map((chunk) => {
+        const document = documentsById.get(String(chunk.document_id));
+        const chunkIndex = getChunkIndex(chunk);
+        const matchingRows = rows.filter((row) => (
+            String(row.document_id) === String(chunk.document_id)
+            && (
+                chunkIndex !== null
+                    ? Number(row.chunk_index) === chunkIndex
+                    : row.chunk_text === chunk.chunk_text
+            )
+        ));
+        const pageNumbers = [...new Set(
+            matchingRows
+                .map((row) => Number(row.page_number))
+                .filter((page) => Number.isInteger(page) && page > 0)
+        )];
+        const excerpt = createExcerpt(chunk.chunk_text, question);
+
+        return {
+            citationNumber: 0,
+            documentId: document.id,
+            documentName: document.original_name,
+            chunkId: chunk.chunk_id ?? chunk.id ?? null,
+            pageNumber: pageNumbers.length === 1 ? pageNumbers[0] : null,
+            excerpt,
+            similarity: chunk.similarity,
+            chunkText: chunk.chunk_text,
+        };
+    });
+};
+
+const buildEvidenceContext = (sources) => sources.map((source) => {
+    return [
+        `[${source.citationNumber}] Source: ${JSON.stringify({
+            documentName: source.documentName,
+            pageNumber: source.pageNumber,
+        })}`,
+        `Untrusted document evidence (JSON string): ${JSON.stringify(source.chunkText)}`,
+    ].join("\n");
+}).join("\n\n");
+
+const removeUnknownCitationMarkers = (answer, sources) => {
+    const validNumbers = new Set(sources.map((source) => String(source.citationNumber)));
+    return answer.replace(/\[(\d+)\]/g, (marker, number) => (
+        validNumbers.has(number) ? marker : ""
+    )).trim();
+};
+
+const askQuestion = async ({ userId, documentId, question }) => {
+    const cleanQuestion = typeof question === "string" ? question.trim() : "";
+    if (!cleanQuestion) throw new Error("Question is required.");
+    if (cleanQuestion.length > 10000) throw new Error("Question must be 10,000 characters or fewer.");
 
     try {
-
-        /*
-        |--------------------------------------------------------------------------
-        | Validate question
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            !question ||
-            question.trim().length === 0
-        ) {
-            throw new Error(
-                "Question is required."
-            );
+        const queryEmbedding = await embeddingService.generateEmbedding(cleanQuestion);
+        if (!Array.isArray(queryEmbedding) || queryEmbedding.length === 0) {
+            throw new Error("Question embedding generation returned no vector.");
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 1. Fetch document information
-        |--------------------------------------------------------------------------
-        |
-        | We now retrieve:
-        |
-        | - summary
-        | - metadata
-        | - category
-        | - OCR text
-        |
-        | This allows RAG to answer questions using information already
-        | extracted and stored in the documents table.
-        |
-        */
+        const { data, error } = await supabase.rpc("match_document_chunks", {
+            query_embedding: queryEmbedding,
+            match_user: userId,
+            match_document: documentId || null,
+            match_count: RETRIEVAL_LIMIT,
+        });
 
-        let document = null;
+        if (error) throw new Error(`Vector search failed: ${error.message}`);
 
-        if (documentId) {
-
-            const {
-                data,
-                error,
-            } = await supabase
-                .from("documents")
-                .select(`
-                    id,
-                    user_id,
-                    original_name,
-                    summary,
-                    metadata,
-                    ai_category,
-                    ocr_text
-                `)
-                .eq("id", documentId)
-                .eq("user_id", userId)
-                .single();
-
-            if (error) {
-                throw new Error(
-                    `Failed to fetch document: ${error.message}`
-                );
-            }
-
-            if (!data) {
-                throw new Error(
-                    "Document not found."
-                );
-            }
-
-            document = data;
+        const relevantChunks = selectRelevantChunks(data, {
+            minimumSimilarity: MINIMUM_SIMILARITY,
+            limit: SOURCE_LIMIT,
+        });
+        if (!relevantChunks.length) {
+            return { answer: NO_EVIDENCE_ANSWER, sources: [], insufficientEvidence: true };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. Generate embedding for user question
-        |--------------------------------------------------------------------------
-        */
-
-        const queryEmbedding =
-            await embeddingService.generateEmbedding(
-                question
-            );
-
-        if (
-            !queryEmbedding ||
-            queryEmbedding.length === 0
-        ) {
-            throw new Error(
-                "Failed to generate question embedding."
-            );
+        const sources = await enrichSources({ chunks: relevantChunks, userId, question: cleanQuestion });
+        if (!sources.length) {
+            return { answer: NO_EVIDENCE_ANSWER, sources: [], insufficientEvidence: true };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 3. Retrieve relevant chunks
-        |--------------------------------------------------------------------------
-        */
+        sources.forEach((source, index) => {
+            source.citationNumber = index + 1;
+        });
 
-        const {
-            data,
-            error,
-        } = await supabase.rpc(
-            "match_document_chunks",
-            {
-                query_embedding: queryEmbedding,
-                match_user: userId,
-                match_document: documentId || null,
-                match_count: 5,
-            }
-        );
-
-        if (error) {
-            throw new Error(
-                `Vector search failed: ${error.message}`
-            );
+        const generatedAnswer = await llmService.generateAnswer({
+            question: cleanQuestion,
+            context: buildEvidenceContext(sources),
+        });
+        if (typeof generatedAnswer !== "string" || !generatedAnswer.trim()) {
+            throw new Error("The language model returned an empty answer.");
         }
 
-        const chunks =
-            data || [];
-
-        /*
-        |--------------------------------------------------------------------------
-        | 4. Build complete RAG context
-        |--------------------------------------------------------------------------
-        */
-
-        const context =
-            buildDocumentContext({
-                document,
-                chunks,
-            });
-
-        /*
-        |--------------------------------------------------------------------------
-        | 5. Check whether ANY information exists
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            !context ||
-            context.trim().length === 0
-        ) {
-
-            return {
-                answer:
-                    "I couldn't find any information in the selected document.",
-                sources: [],
-            };
+        const answer = removeUnknownCitationMarkers(generatedAnswer, sources);
+        const containsCitation = sources.some((source) => (
+            new RegExp(`\\[${source.citationNumber}\\]`).test(answer)
+        ));
+        if (!containsCitation) {
+            return { answer: NO_EVIDENCE_ANSWER, sources: [], insufficientEvidence: true };
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 6. Send context to LLM
-        |--------------------------------------------------------------------------
-        */
-
-        const answer =
-            await llmService.generateAnswer({
-                question,
-                context,
-            });
-
-        /*
-        |--------------------------------------------------------------------------
-        | 7. Return answer + sources
-        |--------------------------------------------------------------------------
-        */
+        const citedSources = sources.filter((source) => (
+            new RegExp(`\\[${source.citationNumber}\\]`).test(answer)
+        ));
 
         return {
             answer,
-
-            sources: chunks.map(
-                (chunk) => ({
-                    documentId:
-                        chunk.document_id,
-
-                    similarity:
-                        chunk.similarity,
-                })
-            ),
+            sources: citedSources.map(({ chunkText, ...source }) => source),
+            insufficientEvidence: false,
         };
-
     } catch (error) {
-
-        console.error(
-            "RAG Error:",
-            error.message
-        );
-
-        throw new Error(
-            `RAG Error: ${error.message}`
-        );
+        console.error("RAG Error:", error.message);
+        throw new Error(`RAG Error: ${error.message}`);
     }
 };
 
-module.exports = {
-    askQuestion,
-};
+module.exports = { askQuestion };

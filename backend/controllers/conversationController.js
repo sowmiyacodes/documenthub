@@ -187,7 +187,7 @@ const sendMessage = async (req, res) => {
             question,
         });
 
-        const answer = result.answer || "I couldn't generate an answer.";
+        const answer = result.answer;
         const sources = result.sources || [];
 
         const { data: assistantMessage, error: assistantError } =
@@ -221,7 +221,7 @@ const sendMessage = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: "Unable to answer your question. Please try again.",
+            message: "We couldn't retrieve source documents or generate an answer. Please try again.",
         });
     }
 };

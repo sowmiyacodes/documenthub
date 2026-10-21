@@ -15,29 +15,48 @@ const { processImage } = require("./image.processor");
  *
  * This is generic and supports different kinds of documents.
  */
-const processPdf = async (buffer) => {
+const extractPdfPages = async (buffer) => {
     try {
         console.log("Starting PDF text extraction...");
 
-        // ---------------------------------------------
-        // STEP 1: Normal PDF text extraction
-        // ---------------------------------------------
+        const embeddedPages = [];
+        let pageNumber = 0;
+        const data = await pdfParse(buffer, {
+            pagerender: async (pageData) => {
+                pageNumber++;
+                const textContent = await pageData.getTextContent({
+                    normalizeWhitespace: false,
+                    disableCombineTextItems: false,
+                });
+                let lastY;
+                let text = "";
 
-        const data = await pdfParse(buffer);
+                for (const item of textContent.items) {
+                    if (lastY === item.transform[5] || lastY === undefined) {
+                        text += item.str;
+                    } else {
+                        text += `\n${item.str}`;
+                    }
+                    lastY = item.transform[5];
+                }
 
-        const extractedText = cleanText(data.text || "");
+                embeddedPages.push({
+                    pageNumber,
+                    text: cleanText(text),
+                });
+                return text;
+            },
+        });
 
-        if (extractedText.trim().length > 50) {
+        const embeddedText = embeddedPages.map((page) => page.text).join("\n");
+
+        if (cleanText(embeddedText || data.text || "").trim().length > 50) {
             console.log(
-                `PDF text extraction completed. Characters extracted: ${extractedText.length}`
+                `PDF text extraction completed. Characters extracted: ${embeddedText.length}`
             );
 
-            return extractedText;
+            return embeddedPages;
         }
-
-        // ---------------------------------------------
-        // STEP 2: Scanned PDF detected
-        // ---------------------------------------------
 
         console.log(
             "No meaningful embedded text found."
@@ -55,8 +74,8 @@ const processPdf = async (buffer) => {
             scale: 2,
         });
 
-        let ocrText = "";
-        let pageNumber = 0;
+        const ocrPages = [];
+        pageNumber = 0;
 
         for await (const page of document) {
             pageNumber++;
@@ -78,23 +97,19 @@ const processPdf = async (buffer) => {
             }
 
             const pageText = await processImage(pageBuffer);
-
-            if (pageText && pageText.trim().length > 0) {
-                ocrText += `\n${pageText}`;
-            }
+            ocrPages.push({
+                pageNumber,
+                text: cleanText(pageText || ""),
+            });
         }
 
-        // ---------------------------------------------
-        // STEP 4: Clean combined OCR text
-        // ---------------------------------------------
-
-        const finalText = cleanText(ocrText);
+        const finalText = cleanText(ocrPages.map((page) => page.text).join("\n"));
 
         console.log(
             `PDF OCR completed. Characters extracted: ${finalText.length}`
         );
 
-        return finalText;
+        return ocrPages;
     } catch (error) {
         throw new Error(
             `PDF Processing Failed: ${error.message}`
@@ -102,6 +117,12 @@ const processPdf = async (buffer) => {
     }
 };
 
+const processPdf = async (buffer) => {
+    const pages = await extractPdfPages(buffer);
+    return pages.map((page) => page.text).filter(Boolean).join("\n\n");
+};
+
 module.exports = {
     processPdf,
+    extractPdfPages,
 };

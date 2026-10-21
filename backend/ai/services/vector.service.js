@@ -1,43 +1,5 @@
 const supabase = require("../../config/supabase");
-
-const CHUNK_SIZE = 1000;
-const CHUNK_OVERLAP = 200;
-
-/**
- * Split text into overlapping chunks
- * This version:
-
-✅ Uses Supabase RPC
-✅ Chunks the document
-✅ Generates embeddings
-✅ Stores embeddings via PostgreSQL
-✅ Updates chunk_count
- */
-
-
-
-
-const splitIntoChunks = (text) => {
-    const chunks = [];
-
-    let start = 0;
-
-    while (start < text.length) {
-        const end = Math.min(start + CHUNK_SIZE, text.length);
-
-        const chunk = text.slice(start, end).trim();
-
-        if (chunk.length > 0) {
-            chunks.push(chunk);
-        }
-
-        if (end >= text.length) break;
-
-        start += CHUNK_SIZE - CHUNK_OVERLAP;
-    }
-
-    return chunks;
-};
+const { splitPagesIntoChunks } = require("../utils/documentChunks");
 
 /**
  * Store document embeddings
@@ -46,6 +8,7 @@ const storeEmbedding = async ({
     documentId,
     userId,
     embeddingGenerator,
+    pages,
     text,
 }) => {
     // Delete old chunks if document is reprocessed
@@ -58,10 +21,14 @@ const storeEmbedding = async ({
         throw new Error(deleteError.message);
     }
 
-    const chunks = splitIntoChunks(text);
+    const sourcePages = Array.isArray(pages) && pages.length
+        ? pages
+        : [{ pageNumber: null, text: text || "" }];
+    const chunks = splitPagesIntoChunks(sourcePages);
 
     for (let i = 0; i < chunks.length; i++) {
-        const embedding = await embeddingGenerator(chunks[i]);
+        const chunk = chunks[i];
+        const embedding = await embeddingGenerator(chunk.text);
 
         const { error } = await supabase.rpc(
             "insert_document_chunk",
@@ -69,13 +36,25 @@ const storeEmbedding = async ({
                 p_document_id: documentId,
                 p_user_id: userId,
                 p_chunk_index: i,
-                p_chunk_text: chunks[i],
+                p_chunk_text: chunk.text,
                 p_embedding: embedding,
             }
         );
 
         if (error) {
             throw new Error(error.message);
+        }
+
+        if (chunk.pageNumber !== null) {
+            const { error: pageError } = await supabase
+                .from("document_chunks")
+                .update({ page_number: chunk.pageNumber })
+                .eq("document_id", documentId)
+                .eq("chunk_index", i);
+
+            if (pageError) {
+                throw new Error(pageError.message);
+            }
         }
     }
 

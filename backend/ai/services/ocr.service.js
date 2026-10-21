@@ -1,5 +1,5 @@
 const { downloadDocument } = require("../utils/fileDownloader");
-const { processPdf } = require("../processors/pdf.processor");
+const { extractPdfPages } = require("../processors/pdf.processor");
 const { processImage } = require("../processors/image.processor");
 
 const SUPPORTED_IMAGE_TYPES = [
@@ -8,7 +8,7 @@ const SUPPORTED_IMAGE_TYPES = [
     "image/jpg",
 ];
 
-const extractText = async (document) => {
+const extractPages = async (document) => {
     try {
         // Download file from Supabase Storage
         const buffer = await downloadDocument(document.storage_path);
@@ -19,14 +19,14 @@ const extractText = async (document) => {
         // PDF
         // -------------------------------
         if (mimeType === "application/pdf") {
-            return await processPdf(buffer);
+            return await extractPdfPages(buffer);
         }
 
         // -------------------------------
         // Images
         // -------------------------------
         if (SUPPORTED_IMAGE_TYPES.includes(mimeType)) {
-            return await processImage(buffer);
+            return [{ pageNumber: null, text: await processImage(buffer) }];
         }
 
         throw new Error(`Unsupported file type: ${mimeType}`);
@@ -36,6 +36,12 @@ const extractText = async (document) => {
     }
 };
 
+const extractText = async (document) => {
+    const pages = await extractPages(document);
+    return pages.map((page) => page.text).filter(Boolean).join("\n\n");
+};
+
 module.exports = {
     extractText,
+    extractPages,
 };

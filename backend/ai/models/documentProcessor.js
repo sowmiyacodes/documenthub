@@ -105,10 +105,14 @@ const processDocument = async (documentId) => {
         );
 
 
-        const extractedText =
-            await ocrService.extractText(
+        const extractedPages =
+            await ocrService.extractPages(
                 document
             );
+        const extractedText = extractedPages
+            .map((page) => page.text)
+            .filter(Boolean)
+            .join("\n\n");
 
 
         if (
@@ -251,7 +255,7 @@ const processDocument = async (documentId) => {
             userId: document.user_id,
             embeddingGenerator:
                 embeddingService.generateEmbedding,
-            text: extractedText,
+            pages: extractedPages,
         });
 
 

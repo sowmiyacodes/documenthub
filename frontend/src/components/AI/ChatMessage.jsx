@@ -3,14 +3,13 @@ import {
   Avatar,
   Box,
   Button,
-  IconButton,
+  Collapse,
   Paper,
   Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
 
-import SmartToyRoundedIcon from "@mui/icons-material/SmartToyRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
@@ -18,6 +17,7 @@ import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -28,6 +28,7 @@ export default function ChatMessage({
   onRetry,
 }) {
   const [copied, setCopied] = useState(false);
+  const [expandedSources, setExpandedSources] = useState({});
   const isAssistant = message.role === "assistant";
 
   const sources = Array.isArray(message.sources) ? message.sources : [];
@@ -38,6 +39,14 @@ export default function ChatMessage({
       : typeof message.answer === "string"
         ? message.answer
         : "";
+  const citationContent = content.replace(/\[(\d+)\]/g, (marker, number) => (
+    sources.some((source) => Number(source.citationNumber) === Number(number))
+      ? `[${number}](#source-${number})`
+      : marker
+  ));
+  const hasNoEvidence = content.startsWith(
+    "I couldn't find enough relevant information in your uploaded documents to answer reliably."
+  );
 
   const handleCopy = () => {
     if (!content) return;
@@ -271,8 +280,41 @@ export default function ChatMessage({
               }}
             >
               {content ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {content}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    a: ({ href, children, ...props }) => {
+                      const citation = /^#source-(\d+)$/.exec(href || "");
+                      if (citation) {
+                        const source = sources.find(
+                          (item) => Number(item.citationNumber) === Number(citation[1])
+                        );
+                        const documentId =
+                          source?.documentId ?? source?.document_id ?? source?.document?.id;
+                        return (
+                          <Button
+                            component="button"
+                            onClick={() => documentId && onOpenDocument?.(documentId, source?.pageNumber)}
+                            disabled={!documentId}
+                            sx={{
+                              minWidth: 0,
+                              p: 0,
+                              verticalAlign: "baseline",
+                              fontSize: "inherit",
+                              fontWeight: 700,
+                              lineHeight: "inherit",
+                              textTransform: "none",
+                            }}
+                          >
+                            [{citation[1]}]
+                          </Button>
+                        );
+                      }
+                      return <a href={href} target="_blank" rel="noreferrer" {...props}>{children}</a>;
+                    },
+                  }}
+                >
+                  {citationContent}
                 </ReactMarkdown>
               ) : (
                 <Typography color="text.secondary" variant="body2">
@@ -391,7 +433,7 @@ export default function ChatMessage({
                   fontSize: "0.72rem",
                 }}
               >
-                RETRIEVED SOURCES ({sources.length})
+                SOURCES ({sources.length})
               </Typography>
             </Box>
 
@@ -412,6 +454,8 @@ export default function ChatMessage({
                     : `Source ${index + 1}`);
 
                 const similarity = Number(source.similarity);
+                const citationNumber = Number(source.citationNumber) || index + 1;
+                const expanded = Boolean(expandedSources[citationNumber]);
 
                 return (
                   <Paper
@@ -457,8 +501,13 @@ export default function ChatMessage({
                             overflowWrap: "anywhere",
                           }}
                         >
-                          {documentName}
+                          [{citationNumber}] {documentName}
                         </Typography>
+                        {Number.isInteger(Number(source.pageNumber)) && Number(source.pageNumber) > 0 && (
+                          <Typography variant="caption" sx={{ color: "#64748b" }}>
+                            Page {source.pageNumber}
+                          </Typography>
+                        )}
                       </Box>
 
                       {source.similarity != null && Number.isFinite(similarity) && (
@@ -477,9 +526,26 @@ export default function ChatMessage({
                           {Math.round(similarity * 100)}% Match
                         </Box>
                       )}
+                      <Button
+                        size="small"
+                        onClick={() => setExpandedSources((current) => ({
+                          ...current,
+                          [citationNumber]: !current[citationNumber],
+                        }))}
+                        endIcon={
+                          <ExpandMoreRoundedIcon
+                            sx={{ transform: expanded ? "rotate(180deg)" : "none" }}
+                          />
+                        }
+                        sx={{ textTransform: "none", minWidth: 0, whiteSpace: "nowrap" }}
+                      >
+                        {expanded ? "Hide" : "Evidence"}
+                      </Button>
                     </Box>
 
-                    {source.excerpt && (
+                    <Collapse in={expanded}>
+                      <Box sx={{ pt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+                      {source.excerpt ? (
                       <Typography
                         variant="body2"
                         sx={{
@@ -494,15 +560,19 @@ export default function ChatMessage({
                           overflowWrap: "anywhere",
                         }}
                       >
-                        "{source.excerpt}"
+                        “{source.excerpt}”
                       </Typography>
-                    )}
+                      ) : (
+                        <Typography variant="caption" sx={{ color: "#64748b" }}>
+                          Evidence excerpt is not available for this saved source.
+                        </Typography>
+                      )}
 
                     {documentId && onOpenDocument && (
                       <Button
                         size="small"
                         variant="text"
-                        onClick={() => onOpenDocument(documentId)}
+                        onClick={() => onOpenDocument(documentId, source.pageNumber)}
                         endIcon={<OpenInNewRoundedIcon sx={{ fontSize: 13 }} />}
                         sx={{
                           alignSelf: "flex-start",
@@ -521,11 +591,21 @@ export default function ChatMessage({
                         Open source file
                       </Button>
                     )}
+                      </Box>
+                    </Collapse>
                   </Paper>
                 );
               })}
             </Stack>
           </Box>
+        )}
+        {isAssistant && hasNoEvidence && (
+          <Typography
+            variant="caption"
+            sx={{ display: "block", mt: 1.5, pl: 0.5, color: "#64748b" }}
+          >
+            No relevant source documents were found for this answer.
+          </Typography>
         )}
       </Box>
     </Box>

@@ -13,3 +13,9 @@ After OCR succeeds, the document processor looks for explicit expiry, renewal, d
 ## Reminder/settings database compatibility
 
 This application uses signed JWTs backed by `public.users`, not Supabase Auth identities. Run `migrations/001_reminder_user_fk_compatibility.sql` after applying the reminder/settings table script so their `user_id` foreign keys match the application identity. The backend uses the private service-role key and checks the authenticated JWT user on every API query; never place that key in frontend configuration.
+
+## Source-cited AI chat
+
+Before deploying source-cited chat or processing new documents, open the Supabase SQL Editor for the application database and run `migrations/002_document_chunk_page_metadata.sql`. It adds a nullable `page_number` to existing `public.document_chunks`; legacy chunks remain usable and are cited without a page. Newly processed PDFs preserve the original PDF page number when creating chunks. Image-only uploads do not claim a page number.
+
+The chat reuses `match_document_chunks`, the existing embedding model, and the saved `ai_conversations` / `ai_messages` tables. Assistant message citations and excerpts are stored in the existing `ai_messages.sources` JSON field. Source metadata is checked against the authenticated user's `public.documents` records before it is returned. Clicking a PDF citation opens its signed document URL at the cited page when the browser's PDF viewer supports page fragments.
