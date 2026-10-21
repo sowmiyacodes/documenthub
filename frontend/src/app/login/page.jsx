@@ -42,7 +42,7 @@ export default function LoginPage() {
       setSubmitting(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+  `${process.env.NEXT_PUBLIC_API_URL || "https://documenthub-backend.onrender.com"}/api/auth/login`,
         {
           method: "POST",
           headers: {

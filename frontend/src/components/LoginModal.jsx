@@ -22,18 +22,28 @@ export default function LoginModal({ isOpen, onClose, openRegister }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      setSubmitting(true);
-      const response = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+    
+try {
+  setSubmitting(true);
 
-      const data = await response.json();
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/auth/login`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  // Keep your existing code here that handles
+  // successful login and login errors.
+
+
 
       if (!response.ok) {
         toast.error(data.message || "Failed to sign in");
